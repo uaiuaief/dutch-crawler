@@ -1,0 +1,7 @@
+.env
+venv/
+**.swp
+**.swo
+geckodriver.log
+__pycache__
+var/
