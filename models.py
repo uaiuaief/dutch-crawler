@@ -34,23 +34,35 @@ class Page:
             self.__setattr__(k, params[k])
 
         
-    def get_element(self, name):
+    def get_element(self, name, parent_name=None):
+        if parent_name:
+            return self._get_element_from_parent(name, parent_name)
+
         identifier = self.identifiers.get(name)
         if not identifier:
             raise ValueError(f'{self.__class__.__name__} has no identifier `{name}`')
 
         if identifier.kind == 'xpath':
-            element = WebDriverWait(self.driver, 10).until(
+            element = WebDriverWait(self.driver, 20).until(
                     EC.presence_of_element_located((By.XPATH, identifier.identifier)))
 
             return element
         elif identifier.kind == 'link_text':
-            element = WebDriverWait(self.driver, 10).until(
+            element = WebDriverWait(self.driver, 20).until(
                     EC.presence_of_element_located((By.LINK_TEXT, identifier.identifier)))
 
             return element
         else:
             raise ValueError("There's no identifier of kind `{identifier.kind}`")
+
+    def _get_element_from_parent(self, child_name, parent_name):
+        parent_element = self.get_element(name=parent_name)
+        child_identifier = self.identifiers.get(child_name)
+
+        if child_identifier == 'xpath':
+            return parent_element.find_element_by_xpath(child_identifier.identifier)
+        elif child_identifier == 'link_text':
+            return parent_element.find_element_by_link_text(child_identifier.identifier)
 
     def next_page(self):
         logger.debug(f'{self.__class__.__name__}: next_page()')
@@ -115,7 +127,6 @@ class LoginPage(Page):
         self.actions.append(self.login)
 
     def login(self):
-        logger.debug('login in')
         login_input = self.get_element('login_input')
         password_input = self.get_element('password_input')
         submit_button = self.get_element('submit_button')
@@ -173,7 +184,20 @@ class ManageExamRequestsPage(Page):
                 'select_candidate_button': ElementIdentifier(
                     kind='xpath',
                     identifier='//input[@id="ctl00_ctl00_DefaultContent_DefaultContent_SelectCandidate"]'
-                )
+                ),
+                'candidate_number': ElementIdentifier(
+                    kind='xpath',
+                    identifier='//span[@id="ctl00_ctl00_DefaultContent_DefaultContent_RequestList_ctl01_RequestRow_CandidateNr"]'
+                ),
+                'first_row': ElementIdentifier(
+                    kind='xpath',
+                    identifier='//tr[@id="ctl00_ctl00_DefaultContent_DefaultContent_RequestList_ctl01_RequestRow_RowExtended"]'
+                ),
+                'reserveren': ElementIdentifier(
+                    kind='link_text',
+                    identifier='reserveren'
+                ),
+
         }
 
         return identifiers
@@ -185,11 +209,27 @@ class ManageExamRequestsPage(Page):
             raise Exception('to be implemented')
 
     def _set_page_actions(self):
-        self.actions.append(self.click_button)
+        if type(self.previous_page) == AnnouncementsPage:
+            self.actions.append(self.select_candidate)
+        elif type(self.previous_page) == SelectCandidatePage:
+            self.actions.append(self.search_dates)
+        else:
+            raise TypeError(f"previous page can't be of type `{type(self.previous_page)}`")
 
-    def click_button(self):
+    def select_candidate(self):
         button = self.get_element('select_candidate_button')
         button.click()
+
+    def search_dates(self):
+        button = self.get_element('search_button')
+        button.click()
+
+        candidate_number = self.get_element('candidate_number')
+        candidate_number.click()
+
+        reserveren_button = self.get_element('reserveren', parent_name='first_row')
+        reserveren_button.click()
+
 
 
 class SelectCandidatePage(Page):
@@ -221,25 +261,22 @@ class SelectCandidatePage(Page):
         return identifiers
 
     def get_next_page(self):
-        raise Exception('to be implemented')
-        #return SelectCandidatePage(self.driver, self.params, self)
+        return ManageExamRequestsPage(self.driver, self.params, self)
 
     def _set_page_actions(self):
         self.actions.append(self.select_candidate)
 
     def select_candidate(self):
         cn = self.get_element('candidate_number_field')
-        bd = self.get_element('birth_date_field')
+        #bd = self.get_element('birth_date_field')
         search = self.get_element('search_button')
 
         cn.send_keys(self.candidate_number)
-        bd.send_keys(self.birth_date)
+        #bd.send_keys(self.birth_date)
         search.click()
 
         candidate = self.get_element('select_candidate')
         candidate.click()
-
-        return ManageExamRequestsPage(self.driver, self.params, self)
 
 
 
