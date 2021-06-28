@@ -31,14 +31,19 @@ class Crawler(APIMixin, DriverMixin):
         except exceptions.NoSuchElementException:
             logger.debug('no user limit page')
 
-        username = "Kirmit91"
-        password = "Rijswijk123!"
+        params = {
+            'username' : "Kirmit91",
+            'password' : "Rijswijk123!",
+            'candidate_number' : "4517072525",
+            'birth_date' : "27-12-1994"
+        }
 
-        login_page = models.LoginPage(self.driver, username, password)
+        login_page = models.LoginPage(self.driver, params)
         announcements_page = login_page.next_page()
-        manage_exams_page = announcements_page.next_page()
-        select_candidate_page = manage_exams_page.next_page()
-        select_candidate_page.next_page()
+        manage_exams_page_one = announcements_page.next_page()
+        select_candidate_page = manage_exams_page_one.next_page()
+        manage_exams_page_two = select_candidate_page.next_page()
+        manage_exams_page_two.next_page()
 
         print(self.driver.current_url)
     
