@@ -44,7 +44,8 @@ class Crawler(APIMixin, DriverMixin):
         manage_exams_page_one = announcements_page.next_page()
         select_candidate_page = manage_exams_page_one.next_page()
         manage_exams_page_two = select_candidate_page.next_page()
-        manage_exams_page_two.next_page()
+        booking_page = manage_exams_page_two.next_page()
+        booking_page.next_page()
 
         print(self.driver.current_url)
     
