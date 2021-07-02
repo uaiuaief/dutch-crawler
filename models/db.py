@@ -43,7 +43,8 @@ class Instructor(BaseClass):
     @students.setter
     def students(self, students):
         arr = [Student(each) for each in students]
-        return arr
+
+        self._students = arr
 
 
 class Student(BaseClass):
@@ -68,7 +69,8 @@ class Student(BaseClass):
     @test_centers.setter
     def test_centers(self, test_centers):
         arr = [TestCenter(each) for each in test_centers]
-        return arr
+
+        self._test_centers = arr
 
 
 class TestCenter(BaseClass):
@@ -77,79 +79,76 @@ class TestCenter(BaseClass):
         self.name = data['name']
 
 
-class Proxy(BaseClass):
-    pass
+if __name__ == "__main__":
+    data = {
+            "id": 1,
+            "email": "john@john.com",
+            "profile": {
+                "first_name": "Test",
+                "last_name": "Instructor",
+                "mobile_number": "999999999999999",
+                "gov_username": "Kirmit91",
+                "gov_password": "Rijswijk123!",
+                "students": [
+                    {
+                        "id": 1,
+                        "created_at": "2021-07-02T00:31:57.887821Z",
+                        "last_modified": "2021-07-02T00:31:57.887885Z",
+                        "candidate_number": "4545179630",
+                        "birth_date": "1994-12-27",
+                        "first_name": "Test",
+                        "last_name": "Student",
+                        "test_type": "B-H",
+                        "earliest_test_date": "2021-07-02",
+                        "days_to_skip": "15,16",
+                        "last_crawled": "2021-07-02T00:30:42Z",
+                        "info_validation": "unchecked",
+                        "test_centers": [
+                            {
+                                "id": 1,
+                                "created_at": "2021-07-02T00:31:32.249116Z",
+                                "last_modified": "2021-07-02T00:31:32.249169Z",
+                                "name": "Amsterdam (Naritaweg 150)"
+                                },
+                            {
+                                "id": 2,
+                                "created_at": "2021-07-02T00:31:40.150639Z",
+                                "last_modified": "2021-07-02T00:31:40.150707Z",
+                                "name": "Almelo (Bedrijvenpark Twente 305)"
+                                },
+                            {
+                                "id": 3,
+                                "created_at": "2021-07-02T00:31:48.599391Z",
+                                "last_modified": "2021-07-02T00:31:48.599547Z",
+                                "name": "Kerkrade (Spekhofstraat 24)"
+                                }
+                            ]
+                        },
+                    {
+                        "id": 2,
+                        "created_at": "2021-07-02T16:46:57.121123Z",
+                        "last_modified": "2021-07-02T16:46:57.121827Z",
+                        "candidate_number": "9999999999999",
+                        "birth_date": "2021-07-02",
+                        "first_name": "invalid",
+                        "last_name": "student",
+                        "test_type": "A",
+                        "earliest_test_date": "2021-07-02",
+                        "days_to_skip": "1",
+                        "last_crawled": "2021-07-02T16:46:32Z",
+                        "info_validation": "unchecked",
+                        "test_centers": [
+                            {
+                                "id": 2,
+                                "created_at": "2021-07-02T00:31:40.150639Z",
+                                "last_modified": "2021-07-02T00:31:40.150707Z",
+                                "name": "Almelo (Bedrijvenpark Twente 305)"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            } 
 
-
-data = {
-        "id": 1,
-        "email": "john@john.com",
-        "profile": {
-            "first_name": "Test",
-            "last_name": "Instructor",
-            "mobile_number": "999999999999999",
-            "gov_username": "Kirmit91",
-            "gov_password": "Rijswijk123!",
-            "students": [
-                {
-                    "id": 1,
-                    "created_at": "2021-07-02T00:31:57.887821Z",
-                    "last_modified": "2021-07-02T00:31:57.887885Z",
-                    "candidate_number": "4545179630",
-                    "birth_date": "1994-12-27",
-                    "first_name": "Test",
-                    "last_name": "Student",
-                    "test_type": "B-H",
-                    "earliest_test_date": "2021-07-02",
-                    "days_to_skip": "15,16",
-                    "last_crawled": "2021-07-02T00:30:42Z",
-                    "info_validation": "unchecked",
-                    "test_centers": [
-                        {
-                            "id": 1,
-                            "created_at": "2021-07-02T00:31:32.249116Z",
-                            "last_modified": "2021-07-02T00:31:32.249169Z",
-                            "name": "Amsterdam (Naritaweg 150)"
-                            },
-                        {
-                            "id": 2,
-                            "created_at": "2021-07-02T00:31:40.150639Z",
-                            "last_modified": "2021-07-02T00:31:40.150707Z",
-                            "name": "Almelo (Bedrijvenpark Twente 305)"
-                            },
-                        {
-                            "id": 3,
-                            "created_at": "2021-07-02T00:31:48.599391Z",
-                            "last_modified": "2021-07-02T00:31:48.599547Z",
-                            "name": "Kerkrade (Spekhofstraat 24)"
-                            }
-                        ]
-                    },
-                {
-                    "id": 2,
-                    "created_at": "2021-07-02T16:46:57.121123Z",
-                    "last_modified": "2021-07-02T16:46:57.121827Z",
-                    "candidate_number": "9999999999999",
-                    "birth_date": "2021-07-02",
-                    "first_name": "invalid",
-                    "last_name": "student",
-                    "test_type": "A",
-                    "earliest_test_date": "2021-07-02",
-                    "days_to_skip": "1",
-                    "last_crawled": "2021-07-02T16:46:32Z",
-                    "info_validation": "unchecked",
-                    "test_centers": [
-                        {
-                            "id": 2,
-                            "created_at": "2021-07-02T00:31:40.150639Z",
-                            "last_modified": "2021-07-02T00:31:40.150707Z",
-                            "name": "Almelo (Bedrijvenpark Twente 305)"
-                            }
-                        ]
-                    }
-                ]
-            }
-        } 
-
-c = Instructor(data)
-print(c)
+    #c = Instructor(data)
+    #print(c.to_json())

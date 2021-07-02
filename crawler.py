@@ -8,7 +8,7 @@ from selenium.common import exceptions
 from selenium.webdriver.support.ui import WebDriverWait
 from captcha_solver import solver
 from config import logger
-import models
+from models import pages
 
 
 class Crawler(APIMixin, DriverMixin):
@@ -44,7 +44,7 @@ class Crawler(APIMixin, DriverMixin):
             ]
         }
 
-        login_page = models.LoginPage(self.driver, params)
+        login_page = pages.LoginPage(self.driver, params)
         announcements_page = login_page.next_page()
         manage_exams_page_one = announcements_page.next_page()
         select_candidate_page = manage_exams_page_one.next_page()
