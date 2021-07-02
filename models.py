@@ -10,6 +10,7 @@ class ElementIdentifier:
     KINDS = [
             'xpath',
             'link_text',
+            'class_name',
     ]
 
     def __init__(self, kind, identifier):
@@ -35,10 +36,38 @@ class Page:
         for k in params:
             self.__setattr__(k, params[k])
 
-        
-    def get_element(self, name, parent_name=None):
-        if parent_name:
-            return self._get_element_from_parent(name, parent_name)
+    def get_elements(self, name, parent=None):
+        if parent:
+            return self._get_elements_from_parent(name, parent)
+
+        identifier = self.identifiers.get(name)
+        if not identifier:
+            raise ValueError(f'{self.__class__.__name__} has no identifier `{name}`')
+
+        if identifier.kind == 'xpath':
+            raise Exception('get multiple elements by xpath is not implemented')
+        elif identifier.kind == 'link_text':
+            raise Exception('get multiple elements by link_text is not implemented')
+        elif identifier.kind == 'class_name':
+            elements = self.driver.find_elements_by_class_name(identifier.identifier)
+        else:
+            raise ValueError(f"There are no identifiers of kind `{identifier.kind}`")
+
+    def _get_elements_from_parent(self, child_name, parent):
+        child_identifier = self.identifiers.get(child_name)
+
+        if child_identifier.kind == 'xpath':
+            return parent.find_elements_by_xpath(child_identifier.identifier)
+        elif child_identifier.kind == 'link_text':
+            return parent.find_elements_by_link_text(child_identifier.identifier)
+        elif child_identifier.kind == 'class_name':
+            return parent.find_elements_by_class_name(child_identifier.identifier)
+        else:
+            raise ValueError(f"There are no identifiers of kind `{child_identifier.kind}`")
+
+    def get_element(self, name, parent=None):
+        if parent:
+            return self._get_element_from_parent(name, parent)
 
         identifier = self.identifiers.get(name)
         if not identifier:
@@ -54,17 +83,21 @@ class Page:
                     EC.presence_of_element_located((By.LINK_TEXT, identifier.identifier)))
 
             return element
+        elif identifier.kind == 'class_name':
+            element = WebDriverWait(self.driver, 20).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, identifier.identifier)))
         else:
-            raise ValueError("There's no identifier of kind `{identifier.kind}`")
+            raise ValueError(f"There are no identifiers of kind `{identifier.kind}`")
 
-    def _get_element_from_parent(self, child_name, parent_name):
-        parent_element = self.get_element(name=parent_name)
+    def _get_element_from_parent(self, child_name, parent):
         child_identifier = self.identifiers.get(child_name)
 
-        if child_identifier == 'xpath':
-            return parent_element.find_element_by_xpath(child_identifier.identifier)
-        elif child_identifier == 'link_text':
-            return parent_element.find_element_by_link_text(child_identifier.identifier)
+        if child_identifier.kind == 'xpath':
+            return parent.find_element_by_xpath(child_identifier.identifier)
+        elif child_identifier.kind == 'link_text':
+            return parent.find_element_by_link_text(child_identifier.identifier)
+        else:
+            raise ValueError(f"There are no identifiers of kind `{child_identifier.kind}`")
 
     def next_page(self):
         logger.debug(f'{self.__class__.__name__}: next_page()')
@@ -241,7 +274,7 @@ class ManageExamRequestsPage(Page):
     def select_test_type(self):
         dropdown = self.get_element('dropdown')
         dropdown.click()
-        dropdown.send_keys(Keys.BACKSPACE)
+        
         dropdown.send_keys('toon alles')
         dropdown.send_keys(Keys.ENTER)
 
@@ -353,6 +386,48 @@ class BookingPage(Page):
                     kind='xpath',
                     identifier='//input[@id="ctl00_ctl00_DefaultContent_DefaultContent_CapacityTimeUpToField"]'
                 ),
+                'tbody': ElementIdentifier(
+                    kind='xpath',
+                    identifier='//div[@id="ctl00_ctl00_DefaultContent_DefaultContent_CapacityContainer_AvailableCapacityTab"]//table/tbody'
+                ),
+                'row': ElementIdentifier(
+                    kind='class_name',
+                    identifier='gridRow'
+                ),
+
+                #Row children:
+                'date': ElementIdentifier(
+                    kind='xpath',
+                    identifier='.//td[2]'
+                ),
+                'week_day': ElementIdentifier(
+                    kind='xpath',
+                    identifier='.//td[3]'
+                ),
+                'start_time': ElementIdentifier(
+                    kind='xpath',
+                    identifier='.//td[4]'
+                ),
+                'end_time': ElementIdentifier(
+                    kind='xpath',
+                    identifier='.//td[5]'
+                ),
+                'free_slots': ElementIdentifier(
+                    kind='xpath',
+                    identifier='.//td[6]'
+                ),
+                'reserveren': ElementIdentifier(
+                    kind='link_text',
+                    identifier='reserveren'
+                ),
+
+                #Booking confirmation popup
+                'accept_button': ElementIdentifier(
+                    kind='xpath',
+                    identifier='//a[@id="ctl00_ctl00_DefaultContent_DefaultContent_AcceptButton"]'
+                ),
+                
+
         }
 
         return identifiers
@@ -362,14 +437,36 @@ class BookingPage(Page):
 
     def _set_page_actions(self):
         self.actions.append(self.select_test_center)
-        self.actions.append(self.choose_days_to_search)
-        self.actions.append(self.fill_date_inputs)
-        self.actions.append(self.fill_time_inputs)
+        #self.actions.append(self.choose_days_to_search)
+        #self.actions.append(self.fill_date_inputs)
+        #self.actions.append(self.fill_time_inputs)
         self.actions.append(self.search_dates)
+        self.actions.append(self.choose_date)
 
     def select_test_center(self):
-        self.get_element('test_center')
-        logger.info('select test center')
+        interval = 1
+        dropdown = self.get_element('test_center')
+        time.sleep(interval)
+        dropdown.click()
+        time.sleep(interval)
+        dropdown.clear()
+        time.sleep(interval)
+        dropdown.send_keys('toon alles')
+        time.sleep(interval)
+        dropdown.send_keys(Keys.ENTER)
+        time.sleep(interval)
+
+        #dropdown.clear()
+        dropdown = self.get_element('test_center')
+        time.sleep(interval)
+        dropdown.click()
+        time.sleep(interval)
+        dropdown.clear()
+        time.sleep(interval)
+        dropdown.send_keys(self.test_centers[0])
+        time.sleep(interval)
+        dropdown.send_keys(Keys.ENTER)
+        time.sleep(interval)
 
     def choose_days_to_search(self):
         monday = self.get_element('monday')
@@ -381,8 +478,8 @@ class BookingPage(Page):
         logger.info('choose days')
 
 
-        monday.click()
-        friday.click()
+        #monday.click()
+        #friday.click()
 
     def fill_date_inputs(self):
         earliest = self.get_element('earliest_date_input')
@@ -401,5 +498,37 @@ class BookingPage(Page):
         latest.send_keys('15:35')
 
     def search_dates(self):
-        self.get_element('search_button')
-        logger.info('search dates')
+        search_button = self.get_element('search_button')
+        search_button.click()
+
+    def choose_date(self):
+        tbody = self.get_element('tbody')
+        rows = self.get_elements('row', tbody)
+        for row in rows:
+            date = self.get_element('date', row).get_attribute('textContent')
+            week_day = self.get_element('week_day', row).get_attribute('textContent')
+            start_time = self.get_element('start_time', row).get_attribute('textContent')
+            end_time = self.get_element('end_time', row).get_attribute('textContent')
+            free_slots = self.get_element('free_slots', row).get_attribute('textContent')
+
+            reserveren_button = self.get_element('reserveren', row)
+
+            if date == '16-08-2021':
+                book_button.click()
+
+
+                """ ### WARNING ###
+
+                Clicking this button will book a date for the customer
+                this can't be undone
+                """
+                #accept_button = self.get_element('accept_button')
+                """ ### WARNING ### """
+
+            print(date)
+            print(week_day)
+            print(start_time)
+            print(end_time)
+            print(free_slots)
+            print()
+

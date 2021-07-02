@@ -36,7 +36,12 @@ class Crawler(APIMixin, DriverMixin):
             'password' : "Rijswijk123!",
             #'candidate_number' : "4517072525",
             'candidate_number' : "4545179630",
-            'birth_date' : "27-12-1994"
+            'birth_date' : "27-12-1994",
+            'test_centers' : [
+                'Amsterdam (Naritaweg 150)',
+                'Almelo (Bedrijvenpark Twente 305)',
+                'Kerkrade (Spekhofstraat 24)',
+            ]
         }
 
         login_page = models.LoginPage(self.driver, params)
