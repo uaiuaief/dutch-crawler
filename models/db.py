@@ -1,4 +1,5 @@
 import json
+from pprint import pprint
 
 
 def asdict(obj):
@@ -50,12 +51,13 @@ class Instructor(BaseClass):
 class Student(BaseClass):
     def __init__(self, data):
         self.id = data['id']
-
         self.candidate_number = data['candidate_number']
         self.birth_date = data['birth_date']
         self.first_name = data['first_name']
         self.last_name = data['last_name']
         self.test_type = data['test_type']
+        self.days_to_skip = data['days_to_skip']
+        self.status = data['status']
         self.earliest_test_date = data['earliest_test_date']
         self.test_centers = data['test_centers']
 
@@ -84,71 +86,91 @@ if __name__ == "__main__":
             "id": 1,
             "email": "john@john.com",
             "profile": {
-                "first_name": "Test",
-                "last_name": "Instructor",
+                "first_name": "John",
+                "last_name": "Galt",
                 "mobile_number": "999999999999999",
                 "gov_username": "Kirmit91",
                 "gov_password": "Rijswijk123!",
+                "student_limit": 100,
                 "students": [
                     {
-                        "id": 1,
-                        "created_at": "2021-07-02T00:31:57.887821Z",
-                        "last_modified": "2021-07-02T00:31:57.887885Z",
-                        "candidate_number": "4545179630",
-                        "birth_date": "1994-12-27",
-                        "first_name": "Test",
-                        "last_name": "Student",
-                        "test_type": "B-H",
-                        "earliest_test_date": "2021-07-02",
-                        "days_to_skip": "15,16",
-                        "last_crawled": "2021-07-02T00:30:42Z",
-                        "info_validation": "unchecked",
+                        "id": 76,
+                        "created_at": "2021-07-08T23:08:04.801303Z",
+                        "last_modified": "2021-07-09T18:56:02.245580Z",
+                        "candidate_number": "d2d123",
+                        "birth_date": "2021-05-11",
+                        "first_name": "Chester",
+                        "last_name": "Bennington",
+                        "test_type": "B",
+                        "earliest_test_date": "2021-06-01",
+                        "days_to_skip": None,
+                        "last_crawled": "2021-07-08T23:08:04Z",
+                        "status": "1",
                         "test_centers": [
                             {
-                                "id": 1,
-                                "created_at": "2021-07-02T00:31:32.249116Z",
-                                "last_modified": "2021-07-02T00:31:32.249169Z",
-                                "name": "Amsterdam (Naritaweg 150)"
+                                "id": 84,
+                                "created_at": "2021-07-09T17:42:37.393522Z",
+                                "last_modified": "2021-07-09T17:42:37.393597Z",
+                                "name": "Hoogeveen (Grote Beer 20)"
                                 },
                             {
-                                "id": 2,
-                                "created_at": "2021-07-02T00:31:40.150639Z",
-                                "last_modified": "2021-07-02T00:31:40.150707Z",
-                                "name": "Almelo (Bedrijvenpark Twente 305)"
+                                "id": 85,
+                                "created_at": "2021-07-09T17:42:37.400392Z",
+                                "last_modified": "2021-07-09T17:42:37.400441Z",
+                                "name": "Hoorn Nh (Holenweg 14G)"
                                 },
                             {
-                                "id": 3,
-                                "created_at": "2021-07-02T00:31:48.599391Z",
-                                "last_modified": "2021-07-02T00:31:48.599547Z",
+                                "id": 86,
+                                "created_at": "2021-07-09T17:42:37.407268Z",
+                                "last_modified": "2021-07-09T17:42:37.407315Z",
                                 "name": "Kerkrade (Spekhofstraat 24)"
                                 }
                             ]
                         },
                     {
-                        "id": 2,
-                        "created_at": "2021-07-02T16:46:57.121123Z",
-                        "last_modified": "2021-07-02T16:46:57.121827Z",
-                        "candidate_number": "9999999999999",
-                        "birth_date": "2021-07-02",
-                        "first_name": "invalid",
-                        "last_name": "student",
-                        "test_type": "A",
-                        "earliest_test_date": "2021-07-02",
-                        "days_to_skip": "1",
-                        "last_crawled": "2021-07-02T16:46:32Z",
-                        "info_validation": "unchecked",
-                        "test_centers": [
-                            {
-                                "id": 2,
-                                "created_at": "2021-07-02T00:31:40.150639Z",
-                                "last_modified": "2021-07-02T00:31:40.150707Z",
-                                "name": "Almelo (Bedrijvenpark Twente 305)"
-                                }
-                            ]
-                        }
+                        "id": 77,
+                        "created_at": "2021-07-08T23:09:24.948459Z",
+                        "last_modified": "2021-07-09T18:55:43.007102Z",
+                        "candidate_number": "12d12",
+                        "birth_date": "2021-07-27",
+                        "first_name": "Serj",
+                        "last_name": "Tankian",
+                        "test_type": "B",
+                        "earliest_test_date": "2021-05-23",
+                        "days_to_skip": None,
+                        "last_crawled": "2021-07-08T23:09:24Z",
+                        "status": "1",
+                        "test_centers": []
+                        },
+                    {
+                            "id": 78,
+                            "created_at": "2021-07-09T18:57:12.463313Z",
+                            "last_modified": "2021-07-09T18:57:12.463372Z",
+                            "candidate_number": "aaaaaaaaaaa",
+                            "birth_date": "2021-07-09",
+                            "first_name": "sss",
+                            "last_name": "ddd",
+                            "test_type": "A",
+                            "earliest_test_date": "2021-07-09",
+                            "days_to_skip": None,
+                            "last_crawled": "2021-07-09T18:56:48Z",
+                            "status": "1",
+                            "test_centers": [
+                                {
+                                    "id": 59,
+                                    "created_at": "2021-07-09T17:42:37.074737Z",
+                                    "last_modified": "2021-07-09T17:42:37.074805Z",
+                                    "name": "Amsterdam (Naritaweg 150)"
+                                    },
+                                {
+                                    "id": 62,
+                                    "created_at": "2021-07-09T17:42:37.096726Z",
+                                    "last_modified": "2021-07-09T17:42:37.096778Z",
+                                    "name": "Assen (Azieweg 25a)"
+                                    }
+                                ]
+                            }
                     ]
-                }
-            } 
+            }
+}
 
-    #c = Instructor(data)
-    #print(c.to_json())

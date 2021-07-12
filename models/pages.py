@@ -1,9 +1,12 @@
+from datetime import datetime, timedelta
 import time
 from config import logger
+from selenium.common import exceptions 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
+from captcha_solver import solver
 
 
 class ElementIdentifier:
@@ -22,6 +25,9 @@ class ElementIdentifier:
 
 
 class Page:
+    WAITING_TIME = 10
+    captcha_solved = False
+
     def __init__(self, driver, params, previous_page=None):
         self.previous_page = previous_page
         self.name = None
@@ -35,6 +41,29 @@ class Page:
 
         for k in params:
             self.__setattr__(k, params[k])
+    
+
+    def _get_captcha_solution(self, sitekey):
+        URL = 'https://top.cbr.nl/Top/Reservation/ReserveCapacityView.aspx'
+        result = solver.recaptcha(sitekey=sitekey, url=URL, invisible=1)
+
+        return result.get('code')
+
+    def solve_captcha(self):
+        logger.info('Solving captcha')
+        recaptcha_identifier = '//input[@id="ctl00_ctl00_DefaultContent_DefaultContent_RecaptchaSiteKey"]'
+
+        recaptcha = WebDriverWait(self.driver, self.WAITING_TIME).until(
+                EC.presence_of_element_located((By.XPATH, recaptcha_identifier)))
+
+        sitekey = recaptcha.get_attribute('value')
+        solution = self._get_captcha_solution(sitekey)
+        print(solution)
+
+        self.driver.execute_script(f'document.getElementById("g-recaptcha-response-100000").innerHTML="{solution}";')
+
+        Page.captcha_solved = True
+        logger.info('Captcha Solved')
 
     def get_elements(self, name, parent=None):
         if parent:
@@ -43,7 +72,6 @@ class Page:
         identifier = self.identifiers.get(name)
         if not identifier:
             raise ValueError(f'{self.__class__.__name__} has no identifier `{name}`')
-
         if identifier.kind == 'xpath':
             raise Exception('get multiple elements by xpath is not implemented')
         elif identifier.kind == 'link_text':
@@ -74,17 +102,17 @@ class Page:
             raise ValueError(f'{self.__class__.__name__} has no identifier `{name}`')
 
         if identifier.kind == 'xpath':
-            element = WebDriverWait(self.driver, 20).until(
+            element = WebDriverWait(self.driver, self.WAITING_TIME).until(
                     EC.presence_of_element_located((By.XPATH, identifier.identifier)))
 
             return element
         elif identifier.kind == 'link_text':
-            element = WebDriverWait(self.driver, 20).until(
+            element = WebDriverWait(self.driver, self.WAITING_TIME).until(
                     EC.presence_of_element_located((By.LINK_TEXT, identifier.identifier)))
 
             return element
         elif identifier.kind == 'class_name':
-            element = WebDriverWait(self.driver, 20).until(
+            element = WebDriverWait(self.driver, self.WAITING_TIME).until(
                     EC.presence_of_element_located((By.CLASS_NAME, identifier.identifier)))
         else:
             raise ValueError(f"There are no identifiers of kind `{identifier.kind}`")
@@ -111,6 +139,7 @@ class Page:
 
     def _execute_page_actions(self):
         for action in self.actions:
+            time.sleep(1)
             action()
 
     def _set_page_actions(self, actions):
@@ -236,6 +265,10 @@ class ManageExamRequestsPage(Page):
                     kind='xpath',
                     identifier='//input[@id="ctl00_ctl00_DefaultContent_DefaultContent_RefProductGroups_referenceDataCombobox_RefProductGroups_Input"]'
                 ),
+                'booking_div': ElementIdentifier(
+                    kind='xpath',
+                    identifier='//div[@id="ctl00_ctl00_DefaultContent_DefaultContent_UPSelection"]'
+                ),
 
         }
 
@@ -248,13 +281,21 @@ class ManageExamRequestsPage(Page):
             return BookingPage(self.driver, self.params, self)
 
     def _set_page_actions(self):
-        if type(self.previous_page) == AnnouncementsPage:
-            self.actions.append(self.select_candidate)
-        elif type(self.previous_page) == SelectCandidatePage:
+        if type(self.previous_page) == SelectCandidatePage:
             self.actions.append(self.select_test_type)
             self.actions.append(self.search_dates)
         else:
-            raise TypeError(f"previous page can't be of type `{type(self.previous_page)}`")
+            self.actions.append(self.select_candidate)
+        
+        return
+
+        #if type(self.previous_page) == AnnouncementsPage:
+        #    self.actions.append(self.select_candidate)
+        #elif type(self.previous_page) == SelectCandidatePage:
+        #    self.actions.append(self.select_test_type)
+        #    self.actions.append(self.search_dates)
+        #else:
+        #    raise TypeError(f"previous page can't be of type `{type(self.previous_page)}`")
 
     def select_candidate(self):
         button = self.get_element('select_candidate_button')
@@ -264,19 +305,35 @@ class ManageExamRequestsPage(Page):
         button = self.get_element('search_button')
         button.click()
 
-        candidate_number = self.get_element('candidate_number')
-        candidate_number.click()
 
         #reserveren_button = self.get_element('reserveren', parent_name='first_row')
-        reserveren_button = self.get_element('reserveren')
-        reserveren_button.click()
+
+        for retry in range(3):
+            candidate_number = self.get_element('candidate_number')
+            candidate_number.click()
+            reserveren_button = self.get_element('reserveren')
+            reserveren_button.click()
+            try:
+                self.get_element('booking_div')
+                break
+            except Exception as e:
+                print('trying again')
+
 
     def select_test_type(self):
-        dropdown = self.get_element('dropdown')
-        dropdown.click()
-        
-        dropdown.send_keys('toon alles')
-        dropdown.send_keys(Keys.ENTER)
+        for retry in range(3):
+            try:
+                dropdown = self.get_element('dropdown')
+                dropdown.click()
+                
+                dropdown.send_keys('toon alles')
+                dropdown.send_keys(Keys.ENTER)
+                time.sleep(1)
+                break
+            except exceptions.StaleElementReferenceException:
+                logger.log(f"retry: {retry}")
+                continue
+
 
 
 class SelectCandidatePage(Page):
@@ -334,13 +391,17 @@ class BookingPage(Page):
     @property
     def identifiers(self):
         identifiers = {
+                'aanvragen': ElementIdentifier(
+                    kind='link_text',
+                    identifier='aanvragen'
+                ),
                 'search_button': ElementIdentifier(
                     kind='xpath',
                     identifier='//input[@id="ctl00_ctl00_DefaultContent_DefaultContent_Find"]'
                 ),
                 'booking_div': ElementIdentifier(
                     kind='xpath',
-                    identifier='//input[@id="ctl00_ctl00_DefaultContent_DefaultContent_UPSelection"]'
+                    identifier='//div[@id="ctl00_ctl00_DefaultContent_DefaultContent_UPSelection"]'
                 ),
                 'monday': ElementIdentifier(
                     kind='xpath',
@@ -396,6 +457,10 @@ class BookingPage(Page):
                 ),
 
                 #Row children:
+                'location': ElementIdentifier(
+                    kind='xpath',
+                    identifier='.//td[1]'
+                ),
                 'date': ElementIdentifier(
                     kind='xpath',
                     identifier='.//td[2]'
@@ -433,18 +498,26 @@ class BookingPage(Page):
         return identifiers
 
     def get_next_page(self):
-        raise Exception("to be implemented")
+        pass
+        #raise Exception("to be implemented")
 
     def _set_page_actions(self):
         self.actions.append(self.select_test_center)
         #self.actions.append(self.choose_days_to_search)
-        #self.actions.append(self.fill_date_inputs)
-        #self.actions.append(self.fill_time_inputs)
+        self.actions.append(self.fill_date_inputs)
+        self.actions.append(self.fill_time_inputs)
         self.actions.append(self.search_dates)
         self.actions.append(self.choose_date)
 
+        self.actions.append(self.go_back_to_start)
+
+    def go_back_to_start(self):
+        aanvragen = self.get_element('aanvragen')
+        aanvragen.click()
+
     def select_test_center(self):
         interval = 1
+
         dropdown = self.get_element('test_center')
         time.sleep(interval)
         dropdown.click()
@@ -455,18 +528,24 @@ class BookingPage(Page):
         time.sleep(interval)
         dropdown.send_keys(Keys.ENTER)
         time.sleep(interval)
-
-        #dropdown.clear()
-        dropdown = self.get_element('test_center')
-        time.sleep(interval)
-        dropdown.click()
-        time.sleep(interval)
-        dropdown.clear()
-        time.sleep(interval)
-        dropdown.send_keys(self.test_centers[0])
-        time.sleep(interval)
-        dropdown.send_keys(Keys.ENTER)
-        time.sleep(interval)
+        
+        for retry in range(3):
+            try:
+                #dropdown.clear()
+                dropdown = self.get_element('test_center')
+                time.sleep(interval)
+                dropdown.click()
+                time.sleep(interval)
+                dropdown.clear()
+                time.sleep(interval)
+                dropdown.send_keys(self.test_centers[0])
+                time.sleep(interval)
+                dropdown.send_keys(Keys.ENTER)
+                time.sleep(interval)
+                break
+            except exceptions.StaleElementReferenceException:
+                print("trying again")
+                continue
 
     def choose_days_to_search(self):
         monday = self.get_element('monday')
@@ -486,26 +565,39 @@ class BookingPage(Page):
         latest = self.get_element('latest_date_input')
         logger.info('fill date')
 
-        earliest.send_keys('08-07-2021')
-        latest.send_keys('31-07-2021')
+        
+        today_obj = datetime.now()
+        today_str = format(today_obj, "%d-%m-%Y")
+
+        today_plus_14_obj = today_obj + timedelta(days=14)
+        today_plus_14_str = format(today_plus_14_obj, "%d-%m-%Y")
+
+        earliest.send_keys(today_str)
+
+        latest.send_keys(today_plus_14_str)
 
     def fill_time_inputs(self):
         earliest = self.get_element('earliest_time_input')
         latest = self.get_element('latest_time_input')
         logger.info('fill time')
 
-        earliest.send_keys('12:20')
-        latest.send_keys('15:35')
+        earliest.send_keys('12:00')
+        #latest.send_keys('15:35')
 
     def search_dates(self):
         search_button = self.get_element('search_button')
+
+        if not Page.captcha_solved:
+            self.solve_captcha()
+
         search_button.click()
 
     def choose_date(self):
         tbody = self.get_element('tbody')
         rows = self.get_elements('row', tbody)
         for row in rows:
-            date = self.get_element('date', row).get_attribute('textContent')
+            location = self.get_element('location', row).get_attribute('textContent')
+            date_str = self.get_element('date', row).get_attribute('textContent')
             week_day = self.get_element('week_day', row).get_attribute('textContent')
             start_time = self.get_element('start_time', row).get_attribute('textContent')
             end_time = self.get_element('end_time', row).get_attribute('textContent')
@@ -513,19 +605,23 @@ class BookingPage(Page):
 
             reserveren_button = self.get_element('reserveren', row)
 
-            if date == '16-08-2021':
+            if location.strip() != self.params['test_centers'][0]:
+                raise Exception("not the right test center")
+
+                date_obj = datetime.strptime(date_str, '%d-%m-%Y')
                 book_button.click()
 
 
-                """ ### WARNING ###
+            """ ### WARNING ###
 
-                Clicking this button will book a date for the customer
-                this can't be undone
-                """
-                #accept_button = self.get_element('accept_button')
-                """ ### WARNING ### """
+            Clicking this button will book a date for the customer
+            this can't be undone
+            """
+            #accept_button = self.get_element('accept_button')
+            """ ### WARNING ### """
 
-            print(date)
+
+            print(f"{location} --- {self.params['test_centers'][0]}")
             print(week_day)
             print(start_time)
             print(end_time)

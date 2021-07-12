@@ -23,6 +23,7 @@ class Crawler(APIMixin, DriverMixin):
 
     def scrape(self):
         self.driver = self.get_driver()
+
         self.driver.get(self.URL)
 
         try:
@@ -34,10 +35,11 @@ class Crawler(APIMixin, DriverMixin):
         params = {
             'username' : "Kirmit91",
             'password' : "Rijswijk123!",
-            #'candidate_number' : "4517072525",
-            'candidate_number' : "4545179630",
+            'candidate_number' : "4533466125",
+            #'candidate_number' : "4545179630",
             'birth_date' : "27-12-1994",
             'test_centers' : [
+                'Rijswijk Zh (Lange Kleiweg 30)',
                 'Amsterdam (Naritaweg 150)',
                 'Almelo (Bedrijvenpark Twente 305)',
                 'Kerkrade (Spekhofstraat 24)',
@@ -47,12 +49,13 @@ class Crawler(APIMixin, DriverMixin):
         login_page = pages.LoginPage(self.driver, params)
         announcements_page = login_page.next_page()
         manage_exams_page_one = announcements_page.next_page()
-        select_candidate_page = manage_exams_page_one.next_page()
-        manage_exams_page_two = select_candidate_page.next_page()
-        booking_page = manage_exams_page_two.next_page()
-        booking_page.next_page()
 
-        print(self.driver.current_url)
+        for i in range(50):
+            select_candidate_page = manage_exams_page_one.next_page()
+            manage_exams_page_two = select_candidate_page.next_page()
+            booking_page = manage_exams_page_two.next_page()
+            booking_page.next_page()
+
     
     def get_current_page(self):
         pass

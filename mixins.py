@@ -21,6 +21,7 @@ class DriverMixin:
         return webdriver.Firefox(self.get_profile(), options=self.get_options())
 
     def init_webdriver(self):
+        self.proxy = '141.164.83.170:3128'
         if self.proxy:
             logger.info(f"Proxy: {self.proxy}")
             self.webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
