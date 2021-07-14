@@ -1,3 +1,4 @@
+import random
 from datetime import datetime, timedelta
 import time
 from config import logger
@@ -28,6 +29,7 @@ class Page:
     WAITING_TIME = 10
     captcha_solved = False
 
+
     def __init__(self, driver, params, previous_page=None):
         self.previous_page = previous_page
         self.name = None
@@ -41,11 +43,22 @@ class Page:
 
         for k in params:
             self.__setattr__(k, params[k])
-    
+
+    def human_type(self, target, text):
+        for char in text:
+            target.send_keys(char)
+            time.sleep(random.uniform(0.1, 0.2))
 
     def _get_captcha_solution(self, sitekey):
         URL = 'https://top.cbr.nl/Top/Reservation/ReserveCapacityView.aspx'
-        result = solver.recaptcha(sitekey=sitekey, url=URL, invisible=1)
+        result = solver.recaptcha(
+                sitekey=sitekey,
+                url=URL,
+                version='v3',
+                action='verify',
+                invisible=1,
+                score=0.5
+                )
 
         return result.get('code')
 
@@ -538,7 +551,8 @@ class BookingPage(Page):
                 time.sleep(interval)
                 dropdown.clear()
                 time.sleep(interval)
-                dropdown.send_keys(self.test_centers[0])
+                #dropdown.send_keys(self.test_centers[0])
+                self.human_type(dropdown, self.test_centers[0])
                 time.sleep(interval)
                 dropdown.send_keys(Keys.ENTER)
                 time.sleep(interval)
@@ -572,23 +586,25 @@ class BookingPage(Page):
         today_plus_14_obj = today_obj + timedelta(days=14)
         today_plus_14_str = format(today_plus_14_obj, "%d-%m-%Y")
 
-        earliest.send_keys(today_str)
-
-        latest.send_keys(today_plus_14_str)
+        #earliest.send_keys(today_str)
+        #latest.send_keys(today_plus_14_str)
+        self.human_type(earliest, today_str)
+        self.human_type(latest, today_plus_14_str)
 
     def fill_time_inputs(self):
         earliest = self.get_element('earliest_time_input')
         latest = self.get_element('latest_time_input')
         logger.info('fill time')
 
-        earliest.send_keys('12:00')
+        #earliest.send_keys('12:00')
+        self.human_type(earliest, '12:00')
         #latest.send_keys('15:35')
 
     def search_dates(self):
         search_button = self.get_element('search_button')
 
-        if not Page.captcha_solved:
-            self.solve_captcha()
+        #if not Page.captcha_solved:
+        #self.solve_captcha()
 
         search_button.click()
 
@@ -608,17 +624,25 @@ class BookingPage(Page):
             if location.strip() != self.params['test_centers'][0]:
                 raise Exception("not the right test center")
 
+            #if start_time == "13:50":
+            if True:
                 date_obj = datetime.strptime(date_str, '%d-%m-%Y')
+                book_button = self.get_element('reserveren', row)
                 book_button.click()
 
 
-            """ ### WARNING ###
+                """ ### WARNING ###
 
-            Clicking this button will book a date for the customer
-            this can't be undone
-            """
-            #accept_button = self.get_element('accept_button')
-            """ ### WARNING ### """
+                Clicking this button will book a date for the customer
+                this can't be undone
+                """
+                accept_button = self.get_element('accept_button')
+                print('TEST BOOKED')
+                print('Date: ', date_str)
+                print('Start: ', start_time)
+                print('End: ', end_time)
+                raise Exception("Date was booked")
+                """ ### WARNING ### """
 
 
             print(f"{location} --- {self.params['test_centers'][0]}")

@@ -50,7 +50,7 @@ class Crawler(APIMixin, DriverMixin):
         announcements_page = login_page.next_page()
         manage_exams_page_one = announcements_page.next_page()
 
-        for i in range(50):
+        while True:
             select_candidate_page = manage_exams_page_one.next_page()
             manage_exams_page_two = select_candidate_page.next_page()
             booking_page = manage_exams_page_two.next_page()

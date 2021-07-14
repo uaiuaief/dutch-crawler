@@ -4,10 +4,27 @@ from pprint import pprint
 from config import logger
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+from models.db import Student
 
 
 class APIMixin:
-    BASE_URL = 'https://localhost:8001/api'
+    BASE_URL = 'http://localhost:8001/api'
+
+    def fetch_next_student(self, user_id):
+        endpoint = 'get-student-to-crawl'
+        url = f"{self.BASE_URL}{endpoint}/"
+
+        r = requests.post(url, json={'user_id': user_id})
+        return r
+
+    def fetch_instructor_to_crawl(self):
+        endpoint = 'get-instructor-proxy-pair'
+        url = f"{self.BASE_URL}/{endpoint}/"
+        print(url)
+
+        r = requests.get(url)
+
+        return r
 
     def get_instructor_credentials(self):
         pass
@@ -21,7 +38,7 @@ class DriverMixin:
         return webdriver.Firefox(self.get_profile(), options=self.get_options())
 
     def init_webdriver(self):
-        self.proxy = '141.164.83.170:3128'
+        self.proxy = '162.244.151.106:3128'
         if self.proxy:
             logger.info(f"Proxy: {self.proxy}")
             self.webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
@@ -61,3 +78,8 @@ class DriverMixin:
 
         return random.choice(user_agents)
 
+
+
+a = APIMixin()
+r = a.fetch_instructor_to_crawl()
+print(r.json())

@@ -12,6 +12,7 @@ except Exception as e:
     print('no students avaiable')
 
 
-
-
-
+"""
+Every 10 minutes make a request to the server asking if there are any
+instructors that should be spawned.
+"""
