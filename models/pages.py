@@ -29,7 +29,6 @@ class Page:
     WAITING_TIME = 10
     captcha_solved = False
 
-
     def __init__(self, driver, params, previous_page=None):
         self.previous_page = previous_page
         self.name = None
@@ -159,10 +158,8 @@ class Page:
         pass
 
     def _make_assertions(self, params):
-        assert params.get('username')
-        assert params.get('password')
-        assert params.get('candidate_number')
-        assert params.get('password')
+        assert params.get('instructor')
+        #assert params.get('student')
 
     @property
     def page_identifier(self):
@@ -208,8 +205,8 @@ class LoginPage(Page):
         password_input = self.get_element('password_input')
         submit_button = self.get_element('submit_button')
 
-        login_input.send_keys(self.username)
-        password_input.send_keys(self.password)
+        login_input.send_keys(self.instructor.username)
+        password_input.send_keys(self.instructor.password)
         submit_button.click()
 
 

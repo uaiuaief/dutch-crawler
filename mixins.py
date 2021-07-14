@@ -17,7 +17,7 @@ class StudentStatusMixin:
             'status': status
             })
 
-        return r
+        r.raise_for_status()
 
 
 class InstructorStatusMixin:
@@ -30,7 +30,12 @@ class InstructorStatusMixin:
             'status': status
             })
 
-        return r
+        r.raise_for_status()
+
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return None
 
 
 class APIMixin(StudentStatusMixin, InstructorStatusMixin):
@@ -41,16 +46,22 @@ class APIMixin(StudentStatusMixin, InstructorStatusMixin):
         url = f"{self.BASE_URL}/{endpoint}/"
 
         r = requests.post(url, json={'user_id': user_id})
-        return r
+
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return None
 
     def fetch_instructor_to_crawl(self):
         endpoint = 'get-instructor-proxy-pair'
         url = f"{self.BASE_URL}/{endpoint}/"
-        print(url)
 
         r = requests.get(url)
 
-        return r
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return None
 
     def get_instructor_credentials(self):
         pass
