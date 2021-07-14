@@ -8,8 +8,6 @@ from models.db import Student
 
 
 class StudentStatusMixin:
-    BASE_URL = 'http://localhost:8001/api'
-
     def set_student_status(self, student_id, status):
         endpoint = 'set-student-status'
         url = f"{self.BASE_URL}/{endpoint}/"
@@ -22,7 +20,20 @@ class StudentStatusMixin:
         return r
 
 
-class APIMixin(StudentStatusMixin):
+class InstructorStatusMixin:
+    def set_instructor_status(self, user_id, status):
+        endpoint = 'set-instructor-status'
+        url = f"{self.BASE_URL}/{endpoint}/"
+
+        r = requests.post(url, json={
+            'user_id': user_id,
+            'status': status
+            })
+
+        return r
+
+
+class APIMixin(StudentStatusMixin, InstructorStatusMixin):
     BASE_URL = 'http://localhost:8001/api'
 
     def fetch_next_student(self, user_id):
@@ -98,9 +109,7 @@ class DriverMixin:
 
 
 if __name__ == "__main__":
-    #a = APIMixin()
-    #r = a.fetch_instructor_to_crawl()
-    #print(r.json())
-    q = StudentStatusMixin()
-    r = q.set_student_status('12asd', 6)
+    q = APIMixin()
+    #r = q.set_student_status(87, 5)
+    r = q.set_instructor_status(1, 2)
     print(r.json())
