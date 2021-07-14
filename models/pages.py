@@ -624,7 +624,6 @@ class BookingPage(Page):
             if location.strip() != self.params['test_centers'][0]:
                 raise Exception("not the right test center")
 
-            #if start_time == "13:50":
             if True:
                 date_obj = datetime.strptime(date_str, '%d-%m-%Y')
                 book_button = self.get_element('reserveren', row)
@@ -636,8 +635,8 @@ class BookingPage(Page):
                 Clicking this button will book a date for the customer
                 this can't be undone
                 """
-                accept_button = self.get_element('accept_button')
-                print('TEST BOOKED')
+                #accept_button = self.get_element('accept_button')
+                print('TEST BOOKED SHOULD BE BOOKED')
                 print('Date: ', date_str)
                 print('Start: ', start_time)
                 print('End: ', end_time)

@@ -7,12 +7,27 @@ from selenium.webdriver.firefox.options import Options
 from models.db import Student
 
 
-class APIMixin:
+class StudentStatusMixin:
+    BASE_URL = 'http://localhost:8001/api'
+
+    def set_student_status(self, student_id, status):
+        endpoint = 'set-student-status'
+        url = f"{self.BASE_URL}/{endpoint}/"
+
+        r = requests.post(url, json={
+            'student_id': student_id,
+            'status': status
+            })
+
+        return r
+
+
+class APIMixin(StudentStatusMixin):
     BASE_URL = 'http://localhost:8001/api'
 
     def fetch_next_student(self, user_id):
         endpoint = 'get-student-to-crawl'
-        url = f"{self.BASE_URL}{endpoint}/"
+        url = f"{self.BASE_URL}/{endpoint}/"
 
         r = requests.post(url, json={'user_id': user_id})
         return r
@@ -28,6 +43,8 @@ class APIMixin:
 
     def get_instructor_credentials(self):
         pass
+
+
 
 
 class DriverMixin:
@@ -80,6 +97,10 @@ class DriverMixin:
 
 
 
-a = APIMixin()
-r = a.fetch_instructor_to_crawl()
-print(r.json())
+if __name__ == "__main__":
+    #a = APIMixin()
+    #r = a.fetch_instructor_to_crawl()
+    #print(r.json())
+    q = StudentStatusMixin()
+    r = q.set_student_status('12asd', 6)
+    print(r.json())
