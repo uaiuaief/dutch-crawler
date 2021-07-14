@@ -515,7 +515,7 @@ class BookingPage(Page):
         self.actions.append(self.select_test_center)
         #self.actions.append(self.choose_days_to_search)
         self.actions.append(self.fill_date_inputs)
-        self.actions.append(self.fill_time_inputs)
+        #self.actions.append(self.fill_time_inputs)
         self.actions.append(self.search_dates)
         self.actions.append(self.choose_date)
 
@@ -549,7 +549,7 @@ class BookingPage(Page):
                 dropdown.clear()
                 time.sleep(interval)
                 #dropdown.send_keys(self.test_centers[0])
-                self.human_type(dropdown, self.test_centers[0])
+                self.human_type(dropdown, self.studen.test_centers[0])
                 time.sleep(interval)
                 dropdown.send_keys(Keys.ENTER)
                 time.sleep(interval)
@@ -567,26 +567,24 @@ class BookingPage(Page):
         self.get_element('saturday')
         logger.info('choose days')
 
-
-        #monday.click()
-        #friday.click()
-
     def fill_date_inputs(self):
         earliest = self.get_element('earliest_date_input')
         latest = self.get_element('latest_date_input')
         logger.info('fill date')
 
         
-        today_obj = datetime.now()
-        today_str = format(today_obj, "%d-%m-%Y")
+        earliest_test_date_obj = self.student.earliest_test_date
+        if earliest_test_date_obj:
+            earliest_test_date_str = format(earliest_test_date_obj, "%d-%m-%Y")
 
-        today_plus_14_obj = today_obj + timedelta(days=14)
-        today_plus_14_str = format(today_plus_14_obj, "%d-%m-%Y")
+            #today_obj = datetime.now()
+            #today_str = format(today_obj, "%d-%m-%Y")
 
-        #earliest.send_keys(today_str)
-        #latest.send_keys(today_plus_14_str)
-        self.human_type(earliest, today_str)
-        self.human_type(latest, today_plus_14_str)
+            earliest_plus_14_obj = earliest_test_date_obj + timedelta(days=14)
+            earliest_plus_14_str = format(earliest_plus_14_obj, "%d-%m-%Y")
+
+            self.human_type(earliest, earliest_test_date_str)
+            self.human_type(latest, earliest_plus_14_str)
 
     def fill_time_inputs(self):
         earliest = self.get_element('earliest_time_input')
@@ -594,15 +592,11 @@ class BookingPage(Page):
         logger.info('fill time')
 
         #earliest.send_keys('12:00')
-        self.human_type(earliest, '12:00')
+        self.human_type(earliest, self.student.earliest)
         #latest.send_keys('15:35')
 
     def search_dates(self):
         search_button = self.get_element('search_button')
-
-        #if not Page.captcha_solved:
-        #self.solve_captcha()
-
         search_button.click()
 
     def choose_date(self):
@@ -621,7 +615,6 @@ class BookingPage(Page):
             if location.strip() != self.params['test_centers'][0]:
                 raise Exception("not the right test center")
 
-            if True:
                 date_obj = datetime.strptime(date_str, '%d-%m-%Y')
                 book_button = self.get_element('reserveren', row)
                 book_button.click()
