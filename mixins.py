@@ -52,7 +52,7 @@ class APIMixin(StudentStatusMixin, InstructorStatusMixin):
         else:
             return None
 
-    def fetch_instructor_to_crawl(self):
+    def fetch_instructor_and_proxy(self):
         endpoint = 'get-instructor-proxy-pair'
         url = f"{self.BASE_URL}/{endpoint}/"
 
@@ -74,10 +74,9 @@ class DriverMixin:
     HEADLESS = False
 
     def get_driver(self):
-        return webdriver.Firefox(self.get_profile(), options=self.get_options())
+        return lambda: webdriver.Firefox(self.get_profile(), options=self.get_options())
 
     def init_webdriver(self):
-        self.proxy = '162.244.151.106:3128'
         if self.proxy:
             logger.info(f"Proxy: {self.proxy}")
             self.webdriver.DesiredCapabilities.FIREFOX['proxy'] = {

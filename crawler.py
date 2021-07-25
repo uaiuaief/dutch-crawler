@@ -15,15 +15,16 @@ class Crawler(APIMixin, DriverMixin):
     #URL = "https://top.cbr.nl/"
     URL = "https://top.cbr.nl/Top/LogOnView.aspx?ReturnUrl=%2ftop"
 
-    def __init__(self, instructor):
+    def __init__(self, instructor, proxy):
         #self.current_page = models.LoginPage()
         self.instructor = instructor
-        self.proxy = None
+        self.proxy = proxy
         self.init_webdriver()
         self.first_run = True
 
-    def setup_page(self):
-        self.driver = self.get_driver()
+    def setup_page(self, driver):
+        #with webdriver.Firefox(self.get_profile(), options=self.get_options()) as driver:
+        self.driver = driver
         self.driver.get(self.URL)
 
         try:
@@ -46,7 +47,10 @@ class Crawler(APIMixin, DriverMixin):
                 'student' : student,
                 }
 
-        manage_exams_page_one = pages.ManageExamRequestsPage(self.driver, params)
+        manage_exams_page_one = pages.ManageExamRequestsPage(
+                self.driver,
+                params,
+                pages.AnnouncementsPage(self.driver, params))
         select_candidate_page = manage_exams_page_one.next_page()
         manage_exams_page_two = select_candidate_page.next_page()
         booking_page = manage_exams_page_two.next_page()

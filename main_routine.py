@@ -1,6 +1,7 @@
 import sys
 import os
 import time
+import multiprocessing as mp
 import mixins
 from config import logger
 from models import db
@@ -11,10 +12,12 @@ from crawler import Crawler
 API = mixins.APIMixin()
 
 def get_instructor():
-    data = API.fetch_instructor_to_crawl()
+    data = API.fetch_instructor_and_proxy()
 
     if data:
-        return db.Instructor(data)
+        user = data.get('user')
+        proxy = data.get('proxy')
+        return (db.Instructor(user), proxy['ip'])
     else:
         return None
 
@@ -31,24 +34,48 @@ def get_student(user_id):
 Every 10 minutes make a request to the server asking if there are any
 instructors that should be spawned.
 """
-#while True:
-#    instructor = get_instructor()
-#    print(instructor.to_json())
-#    break
+def spawn_crawler(instructor, proxy):
+    print("spawning crawler:")
+    print("instructor: ", instructor.first_name)
+    crawler = Crawler(instructor, proxy)
+    
+    driver = crawler.get_driver()
+    with driver() as driver:
+        crawler.setup_page(driver)
+        while True:
+            student = get_student(instructor.id)
+            if student:
+                print("crawling student: ", student.first_name)
+                crawler.scrape(student)
+            else:
+                print("no student")
+
+            time.sleep(10)
 
 
-instructor = get_instructor()
-if instructor:
-    crawler = Crawler(instructor)
-    crawler.setup_page()
-    student = get_student(instructor.id)
-    #crawler.scrape(student)
-
-    #while True:
-        #student = get_student(instructor.id)
-        #crawler.scrape(student)
-
-#print(instructor)
 
 
-#crawler.scrape()
+#data = get_instructor()
+#if data:
+    #instructor, proxy = get_instructor()
+    #spawn_crawler(instructor, proxy)
+
+if __name__ == "__main__":
+    while True:
+        data = get_instructor()
+        if data:
+            instructor, proxy = get_instructor()
+            if instructor:
+                p = mp.Process(target=spawn_crawler, args=(instructor, proxy))
+                p.start()
+
+                #spawn_crawler(instructor)
+            else:
+                print("no instructor")
+
+            #break
+        time.sleep(30)
+        #print(instructor)
+
+
+    #crawler.scrape()

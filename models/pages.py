@@ -8,6 +8,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from captcha_solver import solver
+from mixins import APIMixin
 
 
 class ElementIdentifier:
@@ -25,7 +26,7 @@ class ElementIdentifier:
         self.identifier = identifier
 
 
-class Page:
+class Page(APIMixin):
     WAITING_TIME = 10
     captcha_solved = False
 
@@ -205,8 +206,8 @@ class LoginPage(Page):
         password_input = self.get_element('password_input')
         submit_button = self.get_element('submit_button')
 
-        login_input.send_keys(self.instructor.username)
-        password_input.send_keys(self.instructor.password)
+        login_input.send_keys(self.instructor.gov_username)
+        password_input.send_keys(self.instructor.gov_password)
         submit_button.click()
 
 
@@ -315,7 +316,6 @@ class ManageExamRequestsPage(Page):
         button = self.get_element('search_button')
         button.click()
 
-
         #reserveren_button = self.get_element('reserveren', parent_name='first_row')
 
         for retry in range(3):
@@ -343,7 +343,6 @@ class ManageExamRequestsPage(Page):
             except exceptions.StaleElementReferenceException:
                 logger.log(f"retry: {retry}")
                 continue
-
 
 
 class SelectCandidatePage(Page):
@@ -385,12 +384,16 @@ class SelectCandidatePage(Page):
         #bd = self.get_element('birth_date_field')
         search = self.get_element('search_button')
 
-        cn.send_keys(self.candidate_number)
+        cn.send_keys(self.student.candidate_number)
         #bd.send_keys(self.birth_date)
         search.click()
 
-        candidate = self.get_element('select_candidate')
-        candidate.click()
+        try:
+            candidate = self.get_element('select_candidate')
+            candidate.click()
+        except exceptions.TimeoutException as e:
+            logger.info(f"Student with id: {self.student.id} has incorrect information")
+            self.set_student_status(self.student.id, '2')
 
 
 class BookingPage(Page):
@@ -512,12 +515,13 @@ class BookingPage(Page):
         #raise Exception("to be implemented")
 
     def _set_page_actions(self):
-        self.actions.append(self.select_test_center)
+        #self.actions.append(self.select_test_center)
         #self.actions.append(self.choose_days_to_search)
         self.actions.append(self.fill_date_inputs)
         #self.actions.append(self.fill_time_inputs)
-        self.actions.append(self.search_dates)
-        self.actions.append(self.choose_date)
+        #self.actions.append(self.search_dates)
+        #self.actions.append(self.choose_date)
+        self.actions.append(self.search_test_centers)
 
         self.actions.append(self.go_back_to_start)
 
@@ -525,7 +529,7 @@ class BookingPage(Page):
         aanvragen = self.get_element('aanvragen')
         aanvragen.click()
 
-    def select_test_center(self):
+    def search_test_centers(self):
         interval = 1
 
         dropdown = self.get_element('test_center')
@@ -538,6 +542,25 @@ class BookingPage(Page):
         time.sleep(interval)
         dropdown.send_keys(Keys.ENTER)
         time.sleep(interval)
+
+        for each in self.student.test_centers:
+            self.select_test_center(each)
+            self.search_dates()
+            self.choose_date()
+
+    def select_test_center(self, test_center):
+        interval = 1
+
+        #dropdown = self.get_element('test_center')
+        #time.sleep(interval)
+        #dropdown.click()
+        #time.sleep(interval)
+        #dropdown.clear()
+        #time.sleep(interval)
+        #dropdown.send_keys('toon alles')
+        #time.sleep(interval)
+        #dropdown.send_keys(Keys.ENTER)
+        #time.sleep(interval)
         
         for retry in range(3):
             try:
@@ -549,7 +572,7 @@ class BookingPage(Page):
                 dropdown.clear()
                 time.sleep(interval)
                 #dropdown.send_keys(self.test_centers[0])
-                self.human_type(dropdown, self.studen.test_centers[0])
+                self.human_type(dropdown, test_center.name)
                 time.sleep(interval)
                 dropdown.send_keys(Keys.ENTER)
                 time.sleep(interval)
@@ -573,17 +596,19 @@ class BookingPage(Page):
         logger.info('fill date')
 
         
-        earliest_test_date_obj = self.student.earliest_test_date
-        if earliest_test_date_obj:
-            earliest_test_date_str = format(earliest_test_date_obj, "%d-%m-%Y")
+        date_str = self.student.earliest_test_date
+        if date_str:
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d")
 
-            #today_obj = datetime.now()
-            #today_str = format(today_obj, "%d-%m-%Y")
+            today = datetime.today()
+            if date_obj < today:
+                date_obj = today
 
-            earliest_plus_14_obj = earliest_test_date_obj + timedelta(days=14)
+            earliest_plus_14_obj = date_obj + timedelta(days=14)
             earliest_plus_14_str = format(earliest_plus_14_obj, "%d-%m-%Y")
 
-            self.human_type(earliest, earliest_test_date_str)
+
+            self.human_type(earliest, format(date_obj, "%d-%m-%Y"))
             self.human_type(latest, earliest_plus_14_str)
 
     def fill_time_inputs(self):
@@ -612,29 +637,39 @@ class BookingPage(Page):
 
             reserveren_button = self.get_element('reserveren', row)
 
-            if location.strip() != self.params['test_centers'][0]:
-                raise Exception("not the right test center")
+            test_center_names = [each.name for each in self.student.test_centers]
+            if location.strip() not in test_center_names:
+                print("wrong test center, skipping")
+                return
+                #raise Exception("not the right test center")
 
-                date_obj = datetime.strptime(date_str, '%d-%m-%Y')
-                book_button = self.get_element('reserveren', row)
-                book_button.click()
+            date_obj = datetime.strptime(date_str, '%d-%m-%Y')
 
+            if date_obj.day in self.student.days_to_skip:
+                logger.info(f'skipping day: {date_obj.day}')
+                continue
 
-                """ ### WARNING ###
-
-                Clicking this button will book a date for the customer
-                this can't be undone
-                """
-                #accept_button = self.get_element('accept_button')
-                print('TEST BOOKED SHOULD BE BOOKED')
-                print('Date: ', date_str)
-                print('Start: ', start_time)
-                print('End: ', end_time)
-                raise Exception("Date was booked")
-                """ ### WARNING ### """
+            book_button = self.get_element('reserveren', row)
+            #book_button.click()
+            print("date: ", date_str, " would be booked")
 
 
-            print(f"{location} --- {self.params['test_centers'][0]}")
+
+            """ ### WARNING ###
+
+            Clicking this button will book a date for the customer
+            this can't be undone
+            """
+            #accept_button = self.get_element('accept_button')
+            print('TEST SHOULD BE BOOKED')
+            print('Date: ', date_str)
+            print('Start: ', start_time)
+            print('End: ', end_time)
+            #raise Exception("Date was booked")
+            """ ### WARNING ### """
+
+
+            print(location)
             print(week_day)
             print(start_time)
             print(end_time)

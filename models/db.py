@@ -74,6 +74,33 @@ class Student(BaseClass):
 
         self._test_centers = arr
 
+    @property
+    def days_to_skip(self):
+        return self._days_to_skip
+
+    @days_to_skip.setter
+    def days_to_skip(self, days: str):
+        if days is None:
+            self._days_to_skip = []
+            return
+
+        has_comma = days.find(',')
+        if has_comma > 0:
+            days_list = [int(day) for day in days.split(',') if self._is_valid_day(int(day))] 
+        else:
+            if self._is_valid_day(int(days)):
+                days_list = [int(days)]
+            else:
+                days_list = []
+
+        self._days_to_skip = days_list
+
+    def _is_valid_day(self, day):
+        if 0 < day <= 31:
+            return True
+        else:
+            return False
+
 
 class TestCenter(BaseClass):
     def __init__(self, data):
@@ -103,7 +130,7 @@ if __name__ == "__main__":
                         "last_name": "Bennington",
                         "test_type": "B",
                         "earliest_test_date": "2021-06-01",
-                        "days_to_skip": None,
+                        "days_to_skip": '1,13,32,31,0',
                         "last_crawled": "2021-07-08T23:08:04Z",
                         "status": "1",
                         "test_centers": [
@@ -172,5 +199,10 @@ if __name__ == "__main__":
                             }
                     ]
             }
-}
+    }
+
+
+    i = Instructor(data)
+    print(i.students[0].days_to_skip)
+
 
