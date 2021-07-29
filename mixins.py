@@ -1,10 +1,11 @@
+import sys
 import requests
 import random
 from pprint import pprint
 from config import logger
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
-from models.db import Student
+from models.db import Student, DateFound
 
 
 class StudentStatusMixin:
@@ -63,10 +64,22 @@ class APIMixin(StudentStatusMixin, InstructorStatusMixin):
         else:
             return None
 
-    def get_instructor_credentials(self):
-        pass
+    def add_date_found(self, data):
+        date_found = DateFound(data)
+        payload = date_found.to_dict()
+
+        endpoint = 'add-date-found'
+        url = f"{self.BASE_URL}/{endpoint}/"
 
 
+        r = requests.post(url, json=payload)
+        #print(r.json())
+        r.raise_for_status()
+
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return None
 
 
 class DriverMixin:
@@ -121,5 +134,22 @@ class DriverMixin:
 if __name__ == "__main__":
     q = APIMixin()
     #r = q.set_student_status(87, 5)
-    r = q.set_instructor_status(1, 2)
-    print(r.json())
+    #r = q.set_instructor_status(1, 3)
+    #print(r)
+    #print(r.json())
+    #sys.exit()
+    
+
+    data = {
+            'test_center_name': "Leusden (Fokkerstraat 21)" ,
+            "date": "2021-09-07" ,
+            "week_day": "1" ,
+            "start_time": "15:00" ,
+            "end_time": "15:30" ,
+            "free_slots": "4" ,
+            "user_id": "1" ,
+            }
+    
+    q.add_date_found(data)
+
+

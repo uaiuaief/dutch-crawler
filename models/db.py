@@ -21,6 +21,9 @@ def asdict(obj):
 class BaseClass:
     def to_json(self):
         return json.dumps(asdict(self), indent=4)
+    
+    def to_dict(self):
+        return asdict(self)
 
 
 class Instructor(BaseClass):
@@ -108,12 +111,13 @@ class TestCenter(BaseClass):
 
 class DateFound(BaseClass):
     def __init__(self, data):
-        self.test_center_name = data['id']
+        self.test_center_name = data['test_center_name']
         self.date = data['date']
         self.week_day = data['week_day']
         self.start_time = data['start_time']
         self.end_time = data['end_time']
         self.free_slots = data['free_slots']
+        self.user_id = data['user_id']
 
 
 if __name__ == "__main__":
