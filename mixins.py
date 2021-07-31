@@ -42,11 +42,11 @@ class InstructorStatusMixin:
 class APIMixin(StudentStatusMixin, InstructorStatusMixin):
     BASE_URL = 'http://localhost:8001/api'
 
-    def fetch_next_student(self, user_id):
+    def fetch_next_student(self):
         endpoint = 'get-student-to-crawl'
         url = f"{self.BASE_URL}/{endpoint}/"
 
-        r = requests.post(url, json={'user_id': user_id})
+        r = requests.get(url)
 
         if r.status_code == 200:
             return r.json()
@@ -84,7 +84,7 @@ class APIMixin(StudentStatusMixin, InstructorStatusMixin):
 
 class DriverMixin:
     webdriver = webdriver
-    HEADLESS = True
+    HEADLESS = False
 
     def get_driver(self):
         return lambda: webdriver.Firefox(self.get_profile(), options=self.get_options())

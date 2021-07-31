@@ -11,6 +11,15 @@ from captcha_solver import solver
 from mixins import APIMixin
 
 
+WEEKDAY_DICT = {
+        'ma': '1',
+        'di' : '2',
+        'wo': '3',
+        'do': '4',
+        'vr': '5',
+        'za': '6',
+        }
+
 class ElementIdentifier:
     KINDS = [
             'xpath',
@@ -47,7 +56,7 @@ class Page(APIMixin):
     def human_type(self, target, text):
         for char in text:
             target.send_keys(char)
-            time.sleep(random.uniform(0.1, 0.2))
+            #time.sleep(random.uniform(0.1, 0.2))
 
     def _get_captcha_solution(self, sitekey):
         URL = 'https://top.cbr.nl/Top/Reservation/ReserveCapacityView.aspx'
@@ -263,6 +272,10 @@ class ManageExamRequestsPage(Page):
                 'candidate_number': ElementIdentifier(
                     kind='xpath',
                     identifier='//span[@id="ctl00_ctl00_DefaultContent_DefaultContent_RequestList_ctl01_RequestRow_CandidateNr"]'
+                ),
+                'test_type': ElementIdentifier(
+                    kind='xpath',
+                    identifier='//span[@id="ctl00_ctl00_DefaultContent_DefaultContent_RequestList_ctl01_RequestRow_ProductName"]'
                 ),
                 'first_row': ElementIdentifier(
                     kind='xpath',
@@ -517,13 +530,20 @@ class BookingPage(Page):
     def _set_page_actions(self):
         #self.actions.append(self.select_test_center)
         #self.actions.append(self.choose_days_to_search)
-        self.actions.append(self.fill_date_inputs)
+        #self.actions.append(self.fill_date_inputs)
         #self.actions.append(self.fill_time_inputs)
         #self.actions.append(self.search_dates)
         #self.actions.append(self.choose_date)
         self.actions.append(self.search_test_centers)
 
-        self.actions.append(self.go_back_to_start)
+        if self.role == 'book':
+            self.actions.append(self.book_dates)
+        elif self.role == 'watch':
+            self.actions.append(self.save_dates)
+            self.actions.append(self.go_back_to_start)
+        else:
+            raise Exception('undefined role')
+        
 
     def go_back_to_start(self):
         aanvragen = self.get_element('aanvragen')
@@ -543,10 +563,9 @@ class BookingPage(Page):
         dropdown.send_keys(Keys.ENTER)
         time.sleep(interval)
 
-        for each in self.student.test_centers:
-            self.select_test_center(each)
-            self.search_dates()
-            self.choose_date()
+        self.select_test_center(self.instructor.test_center.name)
+        self.search_dates()
+        self.save_dates()
 
     def select_test_center(self, test_center):
         interval = 1
@@ -572,7 +591,7 @@ class BookingPage(Page):
                 dropdown.clear()
                 time.sleep(interval)
                 #dropdown.send_keys(self.test_centers[0])
-                self.human_type(dropdown, test_center.name)
+                self.human_type(dropdown, test_center)
                 time.sleep(interval)
                 dropdown.send_keys(Keys.ENTER)
                 time.sleep(interval)
@@ -624,7 +643,42 @@ class BookingPage(Page):
         search_button = self.get_element('search_button')
         search_button.click()
 
-    def choose_date(self):
+    """
+    Add test type to date_found_obj
+    """
+    def _save_date(self, row):
+        location = self.get_element('location', row).get_attribute('textContent')
+        date_str = self.get_element('date', row).get_attribute('textContent')
+        week_day = self.get_element('week_day', row).get_attribute('textContent')
+        start_time = self.get_element('start_time', row).get_attribute('textContent')
+        end_time = self.get_element('end_time', row).get_attribute('textContent')
+        free_slots = self.get_element('free_slots', row).get_attribute('textContent')
+
+        if location.strip() != self.instructor.test_center.name:
+            logger.debug("wrong test center, skipping")
+            return
+
+        date_obj = datetime.strptime(date_str, '%d-%m-%Y')
+
+        logger.debug(f"Saving date {location} - {date_str} - {start_time}")
+
+        date_found_obj = self.add_date_found({
+            'test_center_name': location.strip(),
+            "date": format(date_obj, "%Y-%m-%d"),
+            "week_day": WEEKDAY_DICT[week_day],
+            "start_time": start_time,
+            "end_time": end_time,
+            "free_slots": free_slots,
+            "user_id": self.instructor.id,
+            })
+
+    def save_dates(self):
+        tbody = self.get_element('tbody')
+        rows = self.get_elements('row', tbody)
+        for row in rows:
+            self._save_date(row)
+
+    def book_date(self):
         tbody = self.get_element('tbody')
         rows = self.get_elements('row', tbody)
         for row in rows:
@@ -637,42 +691,53 @@ class BookingPage(Page):
 
             reserveren_button = self.get_element('reserveren', row)
 
-            test_center_names = [each.name for each in self.student.test_centers]
-            if location.strip() not in test_center_names:
+            if location.strip() != self.instructor.test_center.name:
                 print("wrong test center, skipping")
                 return
                 #raise Exception("not the right test center")
 
             date_obj = datetime.strptime(date_str, '%d-%m-%Y')
 
-            if date_obj.day in self.student.days_to_skip:
-                logger.info(f'skipping day: {date_obj.day}')
-                continue
+            right_day = self._is_right_day(date_obj.date())
+            right_time = self._is_right_time(start_time, end_time)
+            if right_day and right_time:
+                print(location)
 
-            book_button = self.get_element('reserveren', row)
-            #book_button.click()
-            print("date: ", date_str, " would be booked")
+                book_button = self.get_element('reserveren', row)
+                #book_button.click()
+                print("date: ", date_str, " would be booked")
+
+                """ ### WARNING ###
+
+                Clicking this button will book a date for the customer
+                this can't be undone
+                """
+                #accept_button = self.get_element('accept_button')
+                print('TEST SHOULD BE BOOKED')
+                print('Date: ', date_str)
+                print('Start: ', start_time)
+                print('End: ', end_time)
+                #raise Exception("Date was booked")
+                """ ### WARNING ### """
 
 
+                print(location)
+                print(week_day)
+                print(start_time)
+                print(end_time)
+                print(free_slots)
+                print()
 
-            """ ### WARNING ###
+    def _is_right_day(self, date_obj):
+        if self.student.date_to_book.date == date_obj:
+            return True
+        else:
+            return False
 
-            Clicking this button will book a date for the customer
-            this can't be undone
-            """
-            #accept_button = self.get_element('accept_button')
-            print('TEST SHOULD BE BOOKED')
-            print('Date: ', date_str)
-            print('Start: ', start_time)
-            print('End: ', end_time)
-            #raise Exception("Date was booked")
-            """ ### WARNING ### """
-
-
-            print(location)
-            print(week_day)
-            print(start_time)
-            print(end_time)
-            print(free_slots)
-            print()
+    def _is_right_time(self, start_time, end_time):
+        if self.student.date_to_book.start_time == start_time \
+                and self.student.date_to_book.end_time == end_time:
+                    return True
+        else:
+            return False
 

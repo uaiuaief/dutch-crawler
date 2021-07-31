@@ -1,5 +1,6 @@
 import json
 from pprint import pprint
+from datetime import datetime
 
 
 def asdict(obj):
@@ -68,12 +69,21 @@ class Student(BaseClass):
         self.first_name = data['first_name']
         self.last_name = data['last_name']
         self.test_type = data['test_type']
+        self.date_to_book = data['date_to_book']
         self.days_to_skip = data['days_to_skip']
         self.status = data['status']
         self.search_range = data['search_range']
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+    @property
+    def date_to_book(self):
+        return self._date_to_book
+
+    @date_to_book.setter
+    def date_to_book(self, value):
+        self._date_to_book = DateFound(value)
 
     @property
     def days_to_skip(self):
@@ -113,12 +123,20 @@ class DateFound(BaseClass):
     def __init__(self, data):
         self.test_center_name = data['test_center_name']
         self.date = data['date']
+        self.test_type = data['test_type']
         self.week_day = data['week_day']
         self.start_time = data['start_time']
         self.end_time = data['end_time']
         self.free_slots = data['free_slots']
         self.user_id = data['user_id']
 
+    @property
+    def date(self):
+        return self._date
+
+    @date.setter
+    def date(self, value):
+        self._date = datetime.strptime(value, "%Y-%m-%d").date()
 
 if __name__ == "__main__":
     data = {

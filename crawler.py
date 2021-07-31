@@ -41,10 +41,11 @@ class Crawler(APIMixin, DriverMixin):
         announcements_page = login_page.next_page()
         manage_exams_page_one = announcements_page.next_page()
 
-    def scrape(self, student):
+    def _scrape(self, student):
         params = {
                 'instructor' : self.instructor,
                 'student' : student,
+                'role' : role,
                 }
 
         manage_exams_page_one = pages.ManageExamRequestsPage(
@@ -56,6 +57,10 @@ class Crawler(APIMixin, DriverMixin):
         booking_page = manage_exams_page_two.next_page()
         booking_page.next_page()
 
-    def get_current_page(self):
-        pass
+    def book(self, student, date):
+        self._scrape(student, role='book')
+
+    def watch(self, student):
+        self._scrape(student, role='watch')
+        
 

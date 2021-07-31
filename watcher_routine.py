@@ -21,10 +21,13 @@ def get_instructor():
     else:
         return None
 
-def get_student(user_id):
-    data = API.fetch_next_student(user_id)
+def get_booking_data():
+    data = API.fetch_next_student()
 
     if data:
+        instructor = db.Instructor(data['instructor'])
+        student = db.Student(data['student'])
+
         return db.Student(data)
     else:
         return None
