@@ -41,7 +41,7 @@ class Crawler(APIMixin, DriverMixin):
         announcements_page = login_page.next_page()
         manage_exams_page_one = announcements_page.next_page()
 
-    def _scrape(self, student):
+    def _scrape(self, student, role):
         params = {
                 'instructor' : self.instructor,
                 'student' : student,

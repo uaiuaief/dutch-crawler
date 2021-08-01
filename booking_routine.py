@@ -15,10 +15,10 @@ def get_booking_information():
     data = API.fetch_next_student()
 
     if data:
-        instructor = db.Instructor(data['instructor'])
+        user = db.Instructor(data['user'])
         student = db.Student(data['student'])
 
-        return (instructor, student)
+        return (user, student)
     else:
         return None
 
@@ -44,15 +44,22 @@ def spawn_crawler(instructor, proxy):
 
             time.sleep(10)
 
-
-
-
 #data = get_instructor()
 #if data:
     #instructor, proxy = get_instructor()
     #spawn_crawler(instructor, proxy)
 
 if __name__ == "__main__":
+    booking_info = get_booking_information()
+    if booking_info:
+        instructor, student = booking_info
+        crawler = Crawler(instructor, proxy=None)
+        driver = crawler.get_driver()
+        crawler.setup_page(driver())
+        crawler.watch(student)
+
+
+    sys.exit()
     while True:
         booking_info = get_booking_information()
         if booking_info:
@@ -63,8 +70,8 @@ if __name__ == "__main__":
             p.start()
 
                 #spawn_crawler(instructor)
-            else:
-                print("no instructor")
+        else:
+            print("no instructor")
 
             #break
         time.sleep(30)

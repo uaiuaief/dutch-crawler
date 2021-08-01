@@ -47,11 +47,12 @@ class Page(APIMixin):
 
         self._make_assertions(params)
 
+        for k in params:
+            self.__setattr__(k, params[k])
+
         self.driver = driver
         self._set_page_actions()
 
-        for k in params:
-            self.__setattr__(k, params[k])
 
     def human_type(self, target, text):
         for char in text:
@@ -329,6 +330,7 @@ class ManageExamRequestsPage(Page):
         button = self.get_element('search_button')
         button.click()
 
+        self.params['test_type'] = self.get_element('test_type').get_attribute('textContent')
         #reserveren_button = self.get_element('reserveren', parent_name='first_row')
 
         for retry in range(3):
@@ -666,10 +668,11 @@ class BookingPage(Page):
             'test_center_name': location.strip(),
             "date": format(date_obj, "%Y-%m-%d"),
             "week_day": WEEKDAY_DICT[week_day],
+            "test_type": self.test_type,
             "start_time": start_time,
             "end_time": end_time,
             "free_slots": free_slots,
-            "user_id": self.instructor.id,
+            "found_by": self.instructor.id,
             })
 
     def save_dates(self):

@@ -121,14 +121,15 @@ class TestCenter(BaseClass):
 
 class DateFound(BaseClass):
     def __init__(self, data):
-        self.test_center_name = data['test_center_name']
+        self.test_center_name = data.get('test_center_name')
+        self.test_center = data.get('test_center')
         self.date = data['date']
         self.test_type = data['test_type']
         self.week_day = data['week_day']
         self.start_time = data['start_time']
         self.end_time = data['end_time']
         self.free_slots = data['free_slots']
-        self.user_id = data['user_id']
+        self.user_id = data['found_by']
 
     @property
     def date(self):
@@ -138,69 +139,71 @@ class DateFound(BaseClass):
     def date(self, value):
         self._date = datetime.strptime(value, "%Y-%m-%d").date()
 
+    @property
+    def test_center(self):
+        return self._test_center
+
+    @test_center.setter
+    def test_center(self, test_center):
+        if test_center:
+            self._test_center = TestCenter(test_center)
+        else:
+            self._test_center = None
+
+
+
 if __name__ == "__main__":
     data = {
             "id": 1,
             "email": "john@john.com",
             "profile": {
-                "first_name": "John",
-                "last_name": "Galt",
-                "test_center": {
-                    "id": 89,
-                    "created_at": "2021-07-09T17:42:37.428286Z",
-                    "last_modified": "2021-07-09T17:42:37.428339Z",
-                    "name": "Leusden (Fokkerstraat 21)"
-                },
-                "mobile_number": "999999999999999",
+                "first_name": "Abraham",
+                "last_name": "Lincoln",
+                "mobile_number": "123123123113",
                 "gov_username": "Kirmit91",
                 "gov_password": "Rijswijk123!",
                 "student_limit": 100,
+                "status": "2",
+                "test_center": {
+                    "id": 94,
+                    "created_at": "2021-07-09T17:42:37.503458Z",
+                    "last_modified": "2021-07-09T17:42:37.503505Z",
+                    "name": "Rijswijk Zh (Lange Kleiweg 30)"
+                    },
                 "students": [
                     {
-                        "id": 76,
-                        "created_at": "2021-07-08T23:08:04.801303Z",
-                        "last_modified": "2021-07-09T18:56:02.245580Z",
-                        "candidate_number": "d2d123",
-                        "birth_date": "2021-05-11",
-                        "first_name": "Chester",
-                        "last_name": "Bennington",
-                        "test_type": "B",
-                        "search_range": "1",
-                        "days_to_skip": '1,13,32,31,0',
-                        "last_crawled": "2021-07-08T23:08:04Z",
-                        "status": "1",
-                        },
-                    {
-                        "id": 77,
-                        "created_at": "2021-07-08T23:09:24.948459Z",
-                        "last_modified": "2021-07-09T18:55:43.007102Z",
-                        "candidate_number": "12d12",
-                        "birth_date": "2021-07-27",
-                        "first_name": "Serj",
-                        "last_name": "Tankian",
-                        "test_type": "B",
-                        "search_range": "2",
-                        "days_to_skip": None,
-                        "last_crawled": "2021-07-08T23:09:24Z",
-                        "status": "1",
-                        },
-                    {
-                        "id": 78,
-                        "created_at": "2021-07-09T18:57:12.463313Z",
-                        "last_modified": "2021-07-09T18:57:12.463372Z",
-                        "candidate_number": "aaaaaaaaaaa",
-                        "birth_date": "2021-07-09",
-                        "first_name": "sss",
-                        "last_name": "ddd",
+                        "id": 10,
+                        "date_to_book": {
+                            "id": 30,
+                            "date": "2021-08-05",
+                            "week_day": "1",
+                            "start_time": "22:50:00",
+                            "end_time": "23:30:00",
+                            "free_slots": 3,
+                            "test_type": "A",
+                            "test_center": {
+                                "id": 94,
+                                "created_at": "2021-07-09T17:42:37.503458Z",
+                                "last_modified": "2021-07-09T17:42:37.503505Z",
+                                "name": "Rijswijk Zh (Lange Kleiweg 30)"
+                                },
+                            "found_by": 1
+                            },
+                        "created_at": "2021-07-29T18:34:05.587507Z",
+                        "last_modified": "2021-07-31T18:09:27.825748Z",
+                        "candidate_number": "4533466125",
+                        "birth_date": "2021-07-29",
+                        "first_name": "Abou",
+                        "last_name": "Omar",
                         "test_type": "A",
-                        "search_range": "3",
-                        "days_to_skip": None,
-                        "last_crawled": "2021-07-09T18:56:48Z",
-                        "status": "1",
+                        "search_range": "2",
+                        "test_booked": False,
+                        "days_to_skip": "4",
+                        "status": "3"
                         }
                     ]
                 }
-    }
+            }
 
 
     i = Instructor(data)
