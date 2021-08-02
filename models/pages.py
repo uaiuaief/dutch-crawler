@@ -539,7 +539,7 @@ class BookingPage(Page):
         self.actions.append(self.search_test_centers)
 
         if self.role == 'book':
-            self.actions.append(self.book_dates)
+            self.actions.append(self.book_date)
         elif self.role == 'watch':
             self.actions.append(self.save_dates)
             self.actions.append(self.go_back_to_start)
@@ -567,7 +567,6 @@ class BookingPage(Page):
 
         self.select_test_center(self.instructor.test_center.name)
         self.search_dates()
-        self.save_dates()
 
     def select_test_center(self, test_center):
         interval = 1
@@ -702,7 +701,7 @@ class BookingPage(Page):
             date_obj = datetime.strptime(date_str, '%d-%m-%Y')
 
             right_day = self._is_right_day(date_obj.date())
-            right_time = self._is_right_time(start_time, end_time)
+            right_time = self._is_right_time(start_time)
             if right_day and right_time:
                 print(location)
 
@@ -724,7 +723,6 @@ class BookingPage(Page):
                 """ ### WARNING ### """
 
 
-                print(location)
                 print(week_day)
                 print(start_time)
                 print(end_time)
@@ -735,12 +733,15 @@ class BookingPage(Page):
         if self.student.date_to_book.date == date_obj:
             return True
         else:
+            logger.debug('not right day')
             return False
 
-    def _is_right_time(self, start_time, end_time):
-        if self.student.date_to_book.start_time == start_time \
-                and self.student.date_to_book.end_time == end_time:
-                    return True
+    def _is_right_time(self, start_time):
+        time_to_book_str = self.student.date_to_book.start_time[:-3]
+
+        if time_to_book_str == start_time:
+            return True
         else:
+            logger.debug('not right time')
             return False
 
