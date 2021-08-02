@@ -21,23 +21,8 @@ def get_instructor():
     else:
         return None
 
-def get_booking_data():
-    data = API.fetch_next_student()
 
-    if data:
-        instructor = db.Instructor(data['instructor'])
-        student = db.Student(data['student'])
-
-        return db.Student(data)
-    else:
-        return None
-
-
-"""
-Every 10 minutes make a request to the server asking if there are any
-instructors that should be spawned.
-"""
-def spawn_crawler(instructor, proxy):
+def spawn_watcher(instructor, proxy):
     print("spawning crawler:")
     print("instructor: ", instructor.first_name)
     crawler = Crawler(instructor, proxy)

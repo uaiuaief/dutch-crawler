@@ -13,69 +13,39 @@ API = mixins.APIMixin()
 
 def get_booking_information():
     data = API.fetch_next_student()
+    booking_info = None
 
     if data:
-        user = db.Instructor(data['user'])
-        student = db.Student(data['student'])
+        proxy = API.fetch_valid_proxy()
+        if proxy:
+            user = db.Instructor(data['user'])
+            student = db.Student(data['student'])
 
-        return (user, student)
-    else:
-        return None
+            booking_info = (user, student, proxy['ip'])
 
-"""
-Every 10 minutes make a request to the server asking if there are any
-instructors that should be spawned.
-"""
-def spawn_crawler(instructor, proxy):
-    print("spawning crawler:")
-    print("instructor: ", instructor.first_name)
+    return booking_info
+
+def spawn_booker(instructor, student, proxy):
+    logger.info("spawning crawler:")
+    logger.info(f"Instructor: {instructor.first_name}")
+    logger.info(f"Student: {student.first_name} {student.last_name}")
     crawler = Crawler(instructor, proxy)
     
     driver = crawler.get_driver()
     with driver() as driver:
         crawler.setup_page(driver)
-        while True:
-            student = get_student(instructor.id)
-            if student:
-                print("crawling student: ", student.first_name)
-                crawler.scrape(student)
-            else:
-                print("no student")
+        crawler.book(student)
 
-            time.sleep(10)
-
-#data = get_instructor()
-#if data:
-    #instructor, proxy = get_instructor()
-    #spawn_crawler(instructor, proxy)
 
 if __name__ == "__main__":
-    booking_info = get_booking_information()
-    if booking_info:
-        instructor, student = booking_info
-        crawler = Crawler(instructor, proxy=None)
-        driver = crawler.get_driver()
-        crawler.setup_page(driver())
-        crawler.watch(student)
-
-
-    sys.exit()
     while True:
         booking_info = get_booking_information()
         if booking_info:
-            instructor, student = booking_info
-            #TODO
+            instructor, student, proxy = booking_info
             
-            p = mp.Process(target=spawn_crawler, args=(instructor, proxy))
+            p = mp.Process(target=spawn_booker, args=(instructor, student, proxy))
             p.start()
-
-                #spawn_crawler(instructor)
         else:
-            print("no instructor")
+            print("No students to book")
 
-            #break
-        time.sleep(30)
-        #print(instructor)
-
-
-    #crawler.scrape()
+        time.sleep(10)

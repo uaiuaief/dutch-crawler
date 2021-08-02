@@ -42,6 +42,17 @@ class InstructorStatusMixin:
 class APIMixin(StudentStatusMixin, InstructorStatusMixin):
     BASE_URL = 'http://localhost:8001/api'
 
+    def fetch_valid_proxy(self):
+        endpoint = 'get-valid-proxy'
+        url = f"{self.BASE_URL}/{endpoint}/"
+
+        r = requests.get(url)
+
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return None
+
     def fetch_next_student(self):
         endpoint = 'get-student-to-crawl'
         url = f"{self.BASE_URL}/{endpoint}/"

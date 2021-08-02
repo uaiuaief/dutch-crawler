@@ -57,7 +57,7 @@ class Crawler(APIMixin, DriverMixin):
         booking_page = manage_exams_page_two.next_page()
         booking_page.next_page()
 
-    def book(self, student, date):
+    def book(self, student):
         self._scrape(student, role='book')
 
     def watch(self, student):
