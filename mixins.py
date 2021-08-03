@@ -64,8 +64,8 @@ class APIMixin(StudentStatusMixin, InstructorStatusMixin):
         else:
             return None
 
-    def fetch_instructor_and_proxy(self):
-        endpoint = 'get-instructor-proxy-pair'
+    def fetch_watcher_info(self):
+        endpoint = 'get-watcher-info'
         url = f"{self.BASE_URL}/{endpoint}/"
 
         r = requests.get(url)

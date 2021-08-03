@@ -11,18 +11,19 @@ from crawler import Crawler
 
 API = mixins.APIMixin()
 
-def get_instructor():
-    data = API.fetch_instructor_and_proxy()
+def get_watcher_info():
+    data = API.fetch_watcher_info()
 
     if data:
         user = data.get('user')
+        student = data.get('student')
         proxy = data.get('proxy')
-        return (db.Instructor(user), proxy['ip'])
+
+        return (db.Instructor(user), proxy['ip'], db.Student(student))
     else:
         return None
 
-
-def spawn_watcher(instructor, proxy):
+def spawn_watcher(instructor, proxy, student):
     print("spawning crawler:")
     print("instructor: ", instructor.first_name)
     crawler = Crawler(instructor, proxy)
@@ -31,14 +32,11 @@ def spawn_watcher(instructor, proxy):
     with driver() as driver:
         crawler.setup_page(driver)
         while True:
-            student = get_student(instructor.id)
             if student:
-                print("crawling student: ", student.first_name)
-                crawler.scrape(student)
-            else:
-                print("no student")
+                print("Watcher student: ", student.first_name)
+                crawler.watch(student)
 
-            time.sleep(10)
+            time.sleep(60)
 
 
 
@@ -50,19 +48,17 @@ def spawn_watcher(instructor, proxy):
 
 if __name__ == "__main__":
     while True:
-        data = get_instructor()
-        if data:
-            instructor, proxy = get_instructor()
+        watcher_info = get_watcher_info()
+        if watcher_info:
+            instructor, proxy, student = watcher_info
             if instructor:
-                p = mp.Process(target=spawn_crawler, args=(instructor, proxy))
+                p = mp.Process(target=spawn_watcher, args=(instructor, proxy, student))
                 p.start()
-
-                #spawn_crawler(instructor)
             else:
                 print("no instructor")
 
             #break
-        time.sleep(30)
+        time.sleep(1000)
         #print(instructor)
 
 

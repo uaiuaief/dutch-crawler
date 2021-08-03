@@ -32,6 +32,7 @@ class Instructor(BaseClass):
         self.id = data['id']
         profile = data['profile']
 
+        self.test_type = profile['test_type']
         self.first_name = profile['first_name']
         self.last_name = profile['last_name']
         self.test_center = profile['test_center']
@@ -68,7 +69,6 @@ class Student(BaseClass):
         self.birth_date = data['birth_date']
         self.first_name = data['first_name']
         self.last_name = data['last_name']
-        self.test_type = data['test_type']
         self.date_to_book = data['date_to_book']
         self.days_to_skip = data['days_to_skip']
         self.status = data['status']
@@ -83,7 +83,10 @@ class Student(BaseClass):
 
     @date_to_book.setter
     def date_to_book(self, value):
-        self._date_to_book = DateFound(value)
+        if value:
+            self._date_to_book = DateFound(value)
+        else:
+            self._date_to_book = None
 
     @property
     def days_to_skip(self):
@@ -160,6 +163,8 @@ if __name__ == "__main__":
                 "first_name": "Abraham",
                 "last_name": "Lincoln",
                 "mobile_number": "123123123113",
+                "driving_school_name": "Suja driving school",
+                "test_type": "A",
                 "gov_username": "Kirmit91",
                 "gov_password": "Rijswijk123!",
                 "student_limit": 100,
@@ -195,7 +200,6 @@ if __name__ == "__main__":
                         "birth_date": "2021-07-29",
                         "first_name": "Abou",
                         "last_name": "Omar",
-                        "test_type": "A",
                         "search_range": "2",
                         "test_booked": False,
                         "days_to_skip": "4",
