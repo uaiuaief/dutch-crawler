@@ -34,6 +34,7 @@ def spawn_watcher(instructor, proxy, student):
         while True:
             if student:
                 print("Watcher student: ", student.first_name)
+                crawler.update_last_crawled(instructor.id)
                 crawler.watch(student)
 
             time.sleep(60)
@@ -48,6 +49,7 @@ def spawn_watcher(instructor, proxy, student):
 
 if __name__ == "__main__":
     while True:
+        logger.debug('getting watcher info')
         watcher_info = get_watcher_info()
         if watcher_info:
             instructor, proxy, student = watcher_info
@@ -58,7 +60,7 @@ if __name__ == "__main__":
                 print("no instructor")
 
             #break
-        time.sleep(1000)
+        time.sleep(20)
         #print(instructor)
 
 

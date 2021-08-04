@@ -48,4 +48,4 @@ if __name__ == "__main__":
         else:
             print("No students to book")
 
-        time.sleep(600)
+        time.sleep(10)

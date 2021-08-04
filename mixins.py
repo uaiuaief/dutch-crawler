@@ -21,7 +21,7 @@ class StudentStatusMixin:
         r.raise_for_status()
 
 
-class InstructorStatusMixin:
+class InstructorModelMixin:
     def set_instructor_status(self, user_id, status):
         endpoint = 'set-instructor-status'
         url = f"{self.BASE_URL}/{endpoint}/"
@@ -38,8 +38,23 @@ class InstructorStatusMixin:
         else:
             return None
 
+    def update_last_crawled(self, user_id):
+        endpoint = 'set-user-crawled'
+        url = f"{self.BASE_URL}/{endpoint}/"
 
-class APIMixin(StudentStatusMixin, InstructorStatusMixin):
+        r = requests.post(url, json={
+            'user_id': user_id,
+            })
+
+        r.raise_for_status()
+
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return None
+
+
+class APIMixin(StudentStatusMixin, InstructorModelMixin):
     BASE_URL = 'http://localhost:8001/api'
 
     def fetch_valid_proxy(self):
@@ -161,6 +176,7 @@ if __name__ == "__main__":
             "user_id": "1" ,
             }
     
-    q.add_date_found(data)
+    #q.add_date_found(data)
+    #q.update_last_crawled('45')
 
 

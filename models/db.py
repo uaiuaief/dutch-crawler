@@ -33,8 +33,8 @@ class Instructor(BaseClass):
         profile = data['profile']
 
         self.test_type = profile['test_type']
-        self.first_name = profile['first_name']
-        self.last_name = profile['last_name']
+        self.first_name = profile['full_name']
+        self.driving_school_name = profile['driving_school_name']
         self.test_center = profile['test_center']
         self.gov_username = profile['gov_username']
         self.gov_password = profile['gov_password']
