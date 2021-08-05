@@ -53,6 +53,21 @@ class InstructorModelMixin:
         else:
             return None
 
+    def increase_search_count(self, user_id):
+        endpoint = 'increase-search-count'
+        url = f"{self.BASE_URL}/{endpoint}/"
+
+        r = requests.post(url, json={
+            'user_id': user_id,
+            })
+
+        r.raise_for_status()
+
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return None
+
 
 class APIMixin(StudentStatusMixin, InstructorModelMixin):
     BASE_URL = 'http://localhost:8001/api'
@@ -101,6 +116,19 @@ class APIMixin(StudentStatusMixin, InstructorModelMixin):
         r = requests.post(url, json=payload)
         #print(r.json())
         r.raise_for_status()
+
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return None
+
+    def ban_proxy(self, ip):
+        endpoint = 'ban-proxy'
+        url = f"{self.BASE_URL}/{endpoint}/"
+
+        r = requests.post(url, json={
+            'ip': ip,
+            })
 
         if r.status_code == 200:
             return r.json()
@@ -177,6 +205,7 @@ if __name__ == "__main__":
             }
     
     #q.add_date_found(data)
-    #q.update_last_crawled('45')
+    #q.increase_search_count('45')
+    q.ban_proxy('163.198.251.49:3128')
 
 

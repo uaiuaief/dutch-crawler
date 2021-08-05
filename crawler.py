@@ -46,6 +46,7 @@ class Crawler(APIMixin, DriverMixin):
                 'instructor' : self.instructor,
                 'student' : student,
                 'role' : role,
+                'proxy' : self.proxy,
                 }
 
         manage_exams_page_one = pages.ManageExamRequestsPage(

@@ -530,12 +530,6 @@ class BookingPage(Page):
         #raise Exception("to be implemented")
 
     def _set_page_actions(self):
-        #self.actions.append(self.select_test_center)
-        #self.actions.append(self.choose_days_to_search)
-        #self.actions.append(self.fill_date_inputs)
-        #self.actions.append(self.fill_time_inputs)
-        #self.actions.append(self.search_dates)
-        #self.actions.append(self.choose_date)
         self.actions.append(self.search_test_centers)
 
         if self.role == 'book':
@@ -643,6 +637,7 @@ class BookingPage(Page):
     def search_dates(self):
         search_button = self.get_element('search_button')
         search_button.click()
+        self.increase_search_count(self.instructor.id)
 
     """
     Add test type to date_found_obj
@@ -675,7 +670,12 @@ class BookingPage(Page):
             })
 
     def save_dates(self):
-        tbody = self.get_element('tbody')
+        try:
+            tbody = self.get_element('tbody')
+        except exceptions.TimeoutException as e:
+            self.ban_proxy(self.proxy)
+            raise Exception('Recaptcha appeared')
+
         rows = self.get_elements('row', tbody)
         for row in rows:
             self._save_date(row)
@@ -706,7 +706,7 @@ class BookingPage(Page):
                 print(location)
 
                 book_button = self.get_element('reserveren', row)
-                #book_button.click()
+                book_button.click()
                 print("date: ", date_str, " would be booked")
 
                 """ ### WARNING ###
@@ -714,7 +714,8 @@ class BookingPage(Page):
                 Clicking this button will book a date for the customer
                 this can't be undone
                 """
-                #accept_button = self.get_element('accept_button')
+                accept_button = self.get_element('accept_button')
+                self.set_student_status(self.student.id, '4')
                 print('TEST SHOULD BE BOOKED')
                 print('Date: ', date_str)
                 print('Start: ', start_time)
