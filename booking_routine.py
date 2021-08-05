@@ -3,13 +3,30 @@ import os
 import time
 import multiprocessing as mp
 import mixins
-from config import logger
+from datetime import datetime, timezone, timedelta
+from config import logger, BOOKER_SPAWN_INTERVAL
 from models import db
 from pprint import pprint
 from crawler import Crawler
 
 
 API = mixins.APIMixin()
+
+def is_gov_website_working():
+    timezone_offset = 2.0
+    tzinfo = timezone(timedelta(hours=timezone_offset))
+    current_time = datetime.now(tzinfo)
+
+    start = datetime.strptime("06:30+0200", "%H:%M%z")
+    end = datetime.strptime("23:59+0200", "%H:%M%z")
+
+    #print(f"{current_time.time()} > {start.time()} {current_time.time() > start.time()}")
+    #print(f"{current_time.time()} < {end.time()} {current_time.time() < end.time()}")
+
+    if not start.time() < current_time.time() < end.time():
+        return False
+    else:
+        return True
 
 def get_booking_information():
     data = API.fetch_next_student()
@@ -39,6 +56,8 @@ def spawn_booker(instructor, student, proxy):
 
 if __name__ == "__main__":
     while True:
+        if not is_gov_website_working():
+            time.sleep(600)
         booking_info = get_booking_information()
         if booking_info:
             instructor, student, proxy = booking_info
@@ -48,4 +67,4 @@ if __name__ == "__main__":
         else:
             print("No students to book")
 
-        time.sleep(10)
+        time.sleep(BOOKER_SPAWN_INTERVAL)

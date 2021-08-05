@@ -81,7 +81,7 @@ class Page(APIMixin):
 
         sitekey = recaptcha.get_attribute('value')
         solution = self._get_captcha_solution(sitekey)
-        print(solution)
+        logger.debug(solution)
 
         self.driver.execute_script(f'document.getElementById("g-recaptcha-response-100000").innerHTML="{solution}";')
 
@@ -342,7 +342,7 @@ class ManageExamRequestsPage(Page):
                 self.get_element('booking_div')
                 break
             except Exception as e:
-                print('trying again')
+                logger.debug('trying again')
 
 
     def select_test_type(self):
@@ -601,7 +601,7 @@ class BookingPage(Page):
                 time.sleep(interval)
                 break
             except exceptions.StaleElementReferenceException:
-                print("trying again")
+                logger.debug("trying again")
                 continue
 
     def choose_days_to_search(self):
@@ -703,7 +703,7 @@ class BookingPage(Page):
             reserveren_button = self.get_element('reserveren', row)
 
             if location.strip() != self.instructor.test_center.name:
-                print("wrong test center, skipping")
+                logger.debug("wrong test center, skipping")
                 return
                 #raise Exception("not the right test center")
 
@@ -712,32 +712,24 @@ class BookingPage(Page):
             right_day = self._is_right_day(date_obj.date())
             right_time = self._is_right_time(start_time)
             if right_day and right_time:
-                print(location)
+                logger.debug(location)
 
                 book_button = self.get_element('reserveren', row)
                 book_button.click()
-                print("date: ", date_str, " would be booked")
 
                 """ ### WARNING ###
 
                 Clicking this button will book a date for the customer
                 this can't be undone
                 """
-                #accept_button = self.get_element('accept_button')
+                accept_button = self.get_element('accept_button')
                 self.set_student_status(self.student.id, '4')
-                print('TEST SHOULD BE BOOKED')
-                print('Date: ', date_str)
-                print('Start: ', start_time)
-                print('End: ', end_time)
-                #raise Exception("Date was booked")
+                logger.debug(f'Date: {date_str}')
+                logger.debug(f'Start: {start_time}')
+                logger.debug(f'End: {end_time}')
+                raise Exception("Date was booked")
                 """ ### WARNING ### """
 
-
-                print(week_day)
-                print(start_time)
-                print(end_time)
-                print(free_slots)
-                print()
 
     def _is_right_day(self, date_obj):
         if self.student.date_to_book.date == date_obj:
