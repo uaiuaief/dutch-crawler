@@ -2,10 +2,12 @@ import sys
 import requests
 import random
 from pprint import pprint
-from config import logger
+from config import logger, CRAWLER_USERNAME, CRAWLER_PASSWORD
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from models.db import Student, DateFound
+
+CREDENTIALS = (CRAWLER_USERNAME, CRAWLER_PASSWORD)
 
 
 class StudentStatusMixin:
@@ -13,10 +15,13 @@ class StudentStatusMixin:
         endpoint = 'set-student-status'
         url = f"{self.BASE_URL}/{endpoint}/"
 
-        r = requests.post(url, json={
-            'student_id': student_id,
-            'status': status
-            })
+        r = requests.post(
+                url, 
+                auth=CREDENTIALS,
+                json={
+                    'student_id': student_id,
+                    'status': status
+                    })
 
         r.raise_for_status()
 
@@ -26,10 +31,12 @@ class InstructorModelMixin:
         endpoint = 'set-instructor-status'
         url = f"{self.BASE_URL}/{endpoint}/"
 
-        r = requests.post(url, json={
-            'user_id': user_id,
-            'status': status
-            })
+        r = requests.post(url, 
+                auth=CREDENTIALS,
+                json={
+                    'user_id': user_id,
+                    'status': status
+                    })
 
         r.raise_for_status()
 
@@ -42,9 +49,11 @@ class InstructorModelMixin:
         endpoint = 'set-user-crawled'
         url = f"{self.BASE_URL}/{endpoint}/"
 
-        r = requests.post(url, json={
-            'user_id': user_id,
-            })
+        r = requests.post(url, 
+                auth=CREDENTIALS,
+                json={
+                    'user_id': user_id,
+                    })
 
         r.raise_for_status()
 
@@ -57,9 +66,11 @@ class InstructorModelMixin:
         endpoint = 'increase-search-count'
         url = f"{self.BASE_URL}/{endpoint}/"
 
-        r = requests.post(url, json={
-            'user_id': user_id,
-            })
+        r = requests.post(url, 
+                auth=CREDENTIALS,
+                json={
+                    'user_id': user_id,
+                    })
 
         r.raise_for_status()
 
@@ -76,7 +87,10 @@ class APIMixin(StudentStatusMixin, InstructorModelMixin):
         endpoint = 'get-valid-proxy'
         url = f"{self.BASE_URL}/{endpoint}/"
 
-        r = requests.get(url)
+        r = requests.get(
+                url,
+                auth=CREDENTIALS
+                )
 
         if r.status_code == 200:
             return r.json()
@@ -87,7 +101,10 @@ class APIMixin(StudentStatusMixin, InstructorModelMixin):
         endpoint = 'get-student-to-crawl'
         url = f"{self.BASE_URL}/{endpoint}/"
 
-        r = requests.get(url)
+        r = requests.get(
+                url,
+                auth=CREDENTIALS
+                )
 
         if r.status_code == 200:
             return r.json()
@@ -98,7 +115,10 @@ class APIMixin(StudentStatusMixin, InstructorModelMixin):
         endpoint = 'get-watcher-info'
         url = f"{self.BASE_URL}/{endpoint}/"
 
-        r = requests.get(url)
+        r = requests.get(
+                url,
+                auth=CREDENTIALS
+                )
 
         if r.status_code == 200:
             return r.json()
@@ -113,7 +133,11 @@ class APIMixin(StudentStatusMixin, InstructorModelMixin):
         url = f"{self.BASE_URL}/{endpoint}/"
 
 
-        r = requests.post(url, json=payload)
+        r = requests.post(
+                url, 
+                auth=CREDENTIALS,
+                json=payload
+                )
         #print(r.json())
         r.raise_for_status()
 
@@ -126,9 +150,12 @@ class APIMixin(StudentStatusMixin, InstructorModelMixin):
         endpoint = 'ban-proxy'
         url = f"{self.BASE_URL}/{endpoint}/"
 
-        r = requests.post(url, json={
-            'ip': ip,
-            })
+        r = requests.post(
+                url, 
+                auth=CREDENTIALS,
+                json={
+                    'ip': ip,
+                    })
 
         if r.status_code == 200:
             return r.json()
@@ -206,6 +233,6 @@ if __name__ == "__main__":
     
     #q.add_date_found(data)
     #q.increase_search_count('45')
-    q.ban_proxy('163.198.251.49:3128')
+    #q.ban_proxy('163.198.251.49:3128')
 
 

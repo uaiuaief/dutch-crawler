@@ -36,7 +36,7 @@ class ElementIdentifier:
 
 
 class Page(APIMixin):
-    WAITING_TIME = 10
+    WAITING_TIME = 20
     captcha_solved = False
 
     def __init__(self, driver, params, previous_page=None):
@@ -383,6 +383,10 @@ class SelectCandidatePage(Page):
                 'select_candidate': ElementIdentifier(
                     kind='link_text',
                     identifier='selecteren'
+                ),
+                'empty_row': ElementIdentifier(
+                    kind='xpath',
+                    identifier='//div[@class="gridEmptyRow"]'
                 )
         }
 
@@ -407,8 +411,13 @@ class SelectCandidatePage(Page):
             candidate = self.get_element('select_candidate')
             candidate.click()
         except exceptions.TimeoutException as e:
-            logger.info(f"Student with id: {self.student.id} has incorrect information")
-            self.set_student_status(self.student.id, '2')
+            try:
+                empty_row = self.get_element('empty_row')
+                logger.info(f"Student with id: {self.student.id} has incorrect information")
+                self.set_student_status(self.student.id, '2')
+            except exceptions.TimeoutException:
+                raise e
+
 
 
 class BookingPage(Page):
@@ -714,7 +723,7 @@ class BookingPage(Page):
                 Clicking this button will book a date for the customer
                 this can't be undone
                 """
-                accept_button = self.get_element('accept_button')
+                #accept_button = self.get_element('accept_button')
                 self.set_student_status(self.student.id, '4')
                 print('TEST SHOULD BE BOOKED')
                 print('Date: ', date_str)

@@ -14,3 +14,7 @@ logger.addHandler(logging.StreamHandler())
 
 #ENV VARIABLES
 TWOCAPTCHA_API_KEY = os.environ.get('TWOCAPTCHA_API_KEY')
+
+CRAWLER_USERNAME = os.environ.get('CRAWLER_USERNAME')
+CRAWLER_PASSWORD = os.environ.get('CRAWLER_PASSWORD')
+
