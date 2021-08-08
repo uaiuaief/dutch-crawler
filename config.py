@@ -3,13 +3,21 @@ import sys
 import logging
 from dotenv import load_dotenv
 
-load_dotenv()
 
+load_dotenv()
 
 #LOGGER
 logger = logging.getLogger('crawler')
-logging.basicConfig(filename='var/log/crawler.log', format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %H:%M:%S', level=logging.DEBUG, filemode='w')
-logger.addHandler(logging.StreamHandler())
+
+stream = logging.StreamHandler()
+stream.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s %(message)s', '%m/%d/%Y %H:%M:%S')
+stream.setFormatter(formatter)
+
+logger.addHandler(stream)
+
+logging.basicConfig(filename='var/log/crawler.log', format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %H:%M:%S', level=logging.DEBUG)
+#logger.addHandler(logging.StreamHandler())
 
 
 #ENV VARIABLES

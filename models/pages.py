@@ -307,7 +307,7 @@ class ManageExamRequestsPage(Page):
 
     def _set_page_actions(self):
         if type(self.previous_page) == SelectCandidatePage:
-            self.actions.append(self.select_test_type)
+            #self.actions.append(self.select_test_type)
             self.actions.append(self.search_dates)
         else:
             self.actions.append(self.select_candidate)
@@ -330,6 +330,7 @@ class ManageExamRequestsPage(Page):
         button = self.get_element('search_button')
         button.click()
 
+        self.driver.save_screenshot('/home/ubuntu/website/static/media/crawler.png')
         self.params['test_type'] = self.get_element('test_type').get_attribute('textContent')
         #reserveren_button = self.get_element('reserveren', parent_name='first_row')
 
@@ -351,7 +352,10 @@ class ManageExamRequestsPage(Page):
                 dropdown = self.get_element('dropdown')
                 dropdown.click()
                 
-                dropdown.send_keys('toon alles')
+                #dropdown.send_keys('toon alles')
+                #self.human_type(dropdown, 'toon alles')
+
+                #dropdown.send_keys('toon alles')
                 dropdown.send_keys(Keys.ENTER)
                 time.sleep(1)
                 break
@@ -709,6 +713,8 @@ class BookingPage(Page):
 
             date_obj = datetime.strptime(date_str, '%d-%m-%Y')
 
+            logger.debug(f'Date: {date_str} -- Time: {start_time}')
+
             right_day = self._is_right_day(date_obj.date())
             right_time = self._is_right_time(start_time)
             if right_day and right_time:
@@ -729,6 +735,9 @@ class BookingPage(Page):
                 logger.debug(f'End: {end_time}')
                 raise Exception("Date was booked")
                 """ ### WARNING ### """
+
+        logger.warning('DATE IS GONE')
+
 
 
     def _is_right_day(self, date_obj):

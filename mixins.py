@@ -81,7 +81,7 @@ class InstructorModelMixin:
 
 
 class APIMixin(StudentStatusMixin, InstructorModelMixin):
-    BASE_URL = 'http://localhost:8001/api'
+    BASE_URL = 'http://localhost:8000/api'
 
     def fetch_valid_proxy(self):
         endpoint = 'get-valid-proxy'
@@ -165,7 +165,7 @@ class APIMixin(StudentStatusMixin, InstructorModelMixin):
 
 class DriverMixin:
     webdriver = webdriver
-    HEADLESS = False
+    HEADLESS = True
 
     def get_driver(self):
         return lambda: webdriver.Firefox(self.get_profile(), options=self.get_options())
@@ -175,7 +175,7 @@ class DriverMixin:
             logger.info(f"Proxy: {self.proxy}")
             self.webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
                     "httpProxy": self.proxy,
-                    "ftpProxy": self.proxy,
+                    #"ftpProxy": self.proxy,
                     "sslProxy": self.proxy,
                     "proxyType": "MANUAL",
             }

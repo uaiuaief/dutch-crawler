@@ -41,8 +41,8 @@ def get_watcher_info():
         return None
 
 def spawn_watcher(instructor, proxy, student):
-    print("spawning crawler:")
-    print("instructor: ", instructor.first_name)
+    logger.debug("spawning crawler:")
+    logger.debug(f"instructor: {instructor.first_name}")
     crawler = Crawler(instructor, proxy)
     
     driver = crawler.get_driver()
@@ -52,7 +52,7 @@ def spawn_watcher(instructor, proxy, student):
             if not is_gov_website_working():
                 break
             if student:
-                print("Watcher student: ", student.first_name)
+                logger.debug(f"Watcher student: {student.first_name}")
                 crawler.update_last_crawled(instructor.id)
                 crawler.watch(student)
 
@@ -73,7 +73,7 @@ if __name__ == "__main__":
                 p = mp.Process(target=spawn_watcher, args=(instructor, proxy, student))
                 p.start()
             else:
-                print("no instructor")
+                logger.debug("no instructor")
 
             #break
         time.sleep(WATCHER_SPAWN_INTERVAL)

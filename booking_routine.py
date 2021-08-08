@@ -65,6 +65,6 @@ if __name__ == "__main__":
             p = mp.Process(target=spawn_booker, args=(instructor, student, proxy))
             p.start()
         else:
-            print("No students to book")
+            logger.debug("No students to book")
 
         time.sleep(BOOKER_SPAWN_INTERVAL)
