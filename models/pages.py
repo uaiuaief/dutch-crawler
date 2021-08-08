@@ -723,16 +723,25 @@ class BookingPage(Page):
                 book_button = self.get_element('reserveren', row)
                 book_button.click()
 
+                logger.debug('clicking reserveren button')
+                time.sleep(2)
+
                 """ ### WARNING ###
 
                 Clicking this button will book a date for the customer
                 this can't be undone
                 """
                 accept_button = self.get_element('accept_button')
+                accept_button.click()
+
+                logger.debug('clicking accept button')
+                time.sleep(2)
+
                 self.set_student_status(self.student.id, '4')
                 logger.debug(f'Date: {date_str}')
                 logger.debug(f'Start: {start_time}')
                 logger.debug(f'End: {end_time}')
+
                 raise Exception("Date was booked")
                 """ ### WARNING ### """
 

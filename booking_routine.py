@@ -44,7 +44,7 @@ def get_booking_information():
 
 def spawn_booker(instructor, student, proxy):
     logger.info("spawning crawler:")
-    logger.info(f"Instructor: {instructor.first_name}")
+    logger.info("Instructor: %s", instructor.first_name)
     logger.info(f"Student: {student.first_name} {student.last_name}")
     crawler = Crawler(instructor, proxy)
     
