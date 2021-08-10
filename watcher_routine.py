@@ -54,7 +54,13 @@ def spawn_watcher(instructor, proxy, student):
             if student:
                 logger.debug(f"Watcher student: {student.first_name}")
                 crawler.update_last_crawled(instructor.id)
-                crawler.watch(student)
+                try:
+                    crawler.watch(student)
+                except Exception as e:
+                    error_time = format(datetime.now(), "%d-%m-%Y_%H:%M")
+                    driver.save_screenshot(f'/home/ubuntu/website/static/media/watcher_{error_time}.png')
+                    raise e
+
 
             time.sleep(WATCHER_INTERVAL)
 
@@ -65,6 +71,7 @@ if __name__ == "__main__":
     while True:
         if not is_gov_website_working():
             time.sleep(600)
+            continue
         logger.debug('getting watcher info')
         watcher_info = get_watcher_info()
         if watcher_info:

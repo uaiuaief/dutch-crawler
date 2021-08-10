@@ -51,13 +51,19 @@ def spawn_booker(instructor, student, proxy):
     driver = crawler.get_driver()
     with driver() as driver:
         crawler.setup_page(driver)
-        crawler.book(student)
+        try:
+            crawler.book(student)
+        except Exception as e:
+            error_time = format(datetime.now(), "%d-%m-%Y_%H:%M")
+            driver.save_screenshot(f'/home/ubuntu/website/static/media/booker_{error_time}.png')
+            raise e
 
 
 if __name__ == "__main__":
     while True:
         if not is_gov_website_working():
             time.sleep(600)
+            continue
         booking_info = get_booking_information()
         if booking_info:
             instructor, student, proxy = booking_info

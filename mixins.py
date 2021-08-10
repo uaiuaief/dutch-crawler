@@ -165,7 +165,7 @@ class APIMixin(StudentStatusMixin, InstructorModelMixin):
 
 class DriverMixin:
     webdriver = webdriver
-    HEADLESS = False
+    HEADLESS = True
 
     def get_driver(self):
         return lambda: webdriver.Firefox(self.get_profile(), options=self.get_options())

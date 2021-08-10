@@ -694,7 +694,12 @@ class BookingPage(Page):
             self._save_date(row)
 
     def book_date(self):
-        tbody = self.get_element('tbody')
+        try:
+            tbody = self.get_element('tbody')
+        except exceptions.TimeoutException as e:
+            self.ban_proxy(self.proxy)
+            raise Exception('Recaptcha appeared')
+
         rows = self.get_elements('row', tbody)
         for row in rows:
             location = self.get_element('location', row).get_attribute('textContent')
