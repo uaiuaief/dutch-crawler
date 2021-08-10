@@ -424,7 +424,6 @@ class SelectCandidatePage(Page):
                 raise e
 
 
-
 class BookingPage(Page):
     @property
     def page_identifier(self):
@@ -642,20 +641,18 @@ class BookingPage(Page):
     def fill_time_inputs(self):
         earliest = self.get_element('earliest_time_input')
         latest = self.get_element('latest_time_input')
-        logger.info('fill time')
+        logger.debug('fill time')
 
         #earliest.send_keys('12:00')
-        self.human_type(earliest, self.student.earliest)
+        self.human_type(earliest, '14:00')
         #latest.send_keys('15:35')
 
     def search_dates(self):
+        self.fill_time_inputs()
         search_button = self.get_element('search_button')
         search_button.click()
         self.increase_search_count(self.instructor.id)
 
-    """
-    Add test type to date_found_obj
-    """
     def _save_date(self, row):
         location = self.get_element('location', row).get_attribute('textContent')
         date_str = self.get_element('date', row).get_attribute('textContent')
