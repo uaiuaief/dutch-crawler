@@ -9,6 +9,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from captcha_solver import solver
 from mixins import APIMixin
+from exceptions import RecaptchaAppeared, DateIsGone, StudentNotFound
 
 
 WEEKDAY_DICT = {
@@ -687,7 +688,7 @@ class BookingPage(Page):
             tbody = self.get_element('tbody')
         except exceptions.TimeoutException as e:
             self.ban_proxy(self.proxy)
-            raise Exception('Recaptcha appeared')
+            raise RecaptchaAppeared('RecaptchaAppeared')
 
         rows = self.get_elements('row', tbody)
         for row in rows:
@@ -698,7 +699,7 @@ class BookingPage(Page):
             tbody = self.get_element('tbody')
         except exceptions.TimeoutException as e:
             self.ban_proxy(self.proxy)
-            raise Exception('Recaptcha appeared')
+            raise RecaptchaAppeared('Recaptcha appeared')
 
         rows = self.get_elements('row', tbody)
         for row in rows:
@@ -736,7 +737,12 @@ class BookingPage(Page):
                 Clicking this button will book a date for the customer
                 this can't be undone
                 """
-                accept_button = self.get_element('accept_button')
+                #accept_button = self.get_element('accept_button')
+
+                accept_button_identifier = self.identifiers.get('accept_button').identifier
+                accept_button = WebDriverWait(self.driver, self.WAITING_TIME).until(
+                        EC.element_to_be_clickable((By.XPATH, accept_button_identifier)))
+
                 accept_button.click()
 
                 logger.debug('clicking accept button')
@@ -750,8 +756,8 @@ class BookingPage(Page):
                 raise Exception("Date was booked")
                 """ ### WARNING ### """
 
+        raise DateIsGone(f'{self.student.date_to_book.date} is gone')
         logger.warning('DATE IS GONE')
-
 
 
     def _is_right_day(self, date_obj):
