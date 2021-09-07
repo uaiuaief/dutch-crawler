@@ -66,7 +66,7 @@ def spawn_watcher(crawler_instance):
                     crawler.watch(student)
                 except Exception as e:
                     error_time = format(datetime.now(), "%d-%m-%Y_%H:%M")
-                    #driver.save_screenshot(f'/home/ubuntu/website/static/media/watcher_{error_time}.png')
+                    driver.save_screenshot(f'/home/ubuntu/website/static/media/watcher_{error_time}.png')
                     raise e
             else:
                 break
