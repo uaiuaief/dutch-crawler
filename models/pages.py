@@ -753,19 +753,19 @@ class BookingPage(Page):
                 raise Exception("Date was booked")
                 """ ### WARNING ### """
 
-        raise DateIsGone(f'{self.student.date_to_book.date} is gone')
+        raise DateIsGone(f'{self.date_to_book.date} is gone')
         logger.warning('DATE IS GONE')
 
 
     def _is_right_day(self, date_obj):
-        if self.student.date_to_book.date == date_obj:
+        if self.date_to_book.date == date_obj:
             return True
         else:
             logger.debug('not right day')
             return False
 
     def _is_right_time(self, start_time):
-        time_to_book_str = self.student.date_to_book.start_time[:-3]
+        time_to_book_str = self.date_to_book.start_time[:-3]
 
         if time_to_book_str == start_time:
             return True

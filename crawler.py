@@ -14,6 +14,7 @@ from models import pages
 class Crawler(APIMixin, DriverMixin):
     #URL = "https://top.cbr.nl/"
     URL = "https://top.cbr.nl/Top/LogOnView.aspx?ReturnUrl=%2ftop"
+    current_page = None
 
     def __init__(self, instructor, proxy):
         #self.current_page = models.LoginPage()
@@ -41,6 +42,33 @@ class Crawler(APIMixin, DriverMixin):
         announcements_page = login_page.next_page()
         manage_exams_page_one = announcements_page.next_page()
 
+    def setup_booking_crawler(self, driver, student):
+        role = "book"
+        #with webdriver.Firefox(self.get_profile(), options=self.get_options()) as driver:
+        self.driver = driver
+        self.driver.get(self.URL)
+
+        try:
+            link = self.driver.find_element_by_link_text('klik hier om verder te gaan')
+            link.click()
+        except exceptions.NoSuchElementException:
+            logger.debug('no user limit page')
+
+        params = {
+                'instructor' : self.instructor,
+                'student' : student,
+                'role' : role,
+                'proxy' : self.proxy,
+                }
+
+        login_page = pages.LoginPage(self.driver, params)
+        announcements_page = login_page.next_page()
+        manage_exams_page_one = announcements_page.next_page()
+        select_candidate_page = manage_exams_page_one.next_page()
+        manage_exams_page_two = select_candidate_page.next_page()
+        booking_page = manage_exams_page_two.next_page()
+        self.current_page = booking_page
+
     def _scrape(self, student, role):
         params = {
                 'instructor' : self.instructor,
@@ -58,8 +86,17 @@ class Crawler(APIMixin, DriverMixin):
         booking_page = manage_exams_page_two.next_page()
         booking_page.next_page()
 
-    def book(self, student):
-        self._scrape(student, role='book')
+    def book(self, student, date_to_book):
+        params = {
+                'instructor' : self.instructor,
+                'date_to_book' : date_to_book,
+                'student' : student,
+                'role' : 'book',
+                'proxy' : self.proxy,
+                }
+
+        booking_page = pages.BookingPage(self.driver, params)
+        booking_page.next_page()
 
     def watch(self, student):
         self._scrape(student, role='watch')
