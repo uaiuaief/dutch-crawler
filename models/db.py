@@ -154,63 +154,154 @@ class DateFound(BaseClass):
             self._test_center = None
 
 
+class CrawlerInstance(BaseClass):
+    def __init__(self, data):
+        self.id = data['id']
+        self.instructor = data['instructor']
+        self.student = data['student']
+        self.proxy = data['proxy']
+        self.role = data['role']
+        self.last_ping = data['last_ping']
+
+    @property
+    def instructor(self):
+        return self._instructor
+
+    @instructor.setter
+    def instructor(self, value):
+        self._instructor = Instructor(value)
+
+    @property
+    def student(self):
+        return self._student
+
+    @student.setter
+    def student(self, value):
+        value['date_to_book'] = None
+        self._student = Student(value)
+
 
 if __name__ == "__main__":
     data = {
-            "id": 1,
-            "email": "john@john.com",
-            "profile": {
-                "first_name": "Abraham",
-                "last_name": "Lincoln",
-                "mobile_number": "123123123113",
-                "driving_school_name": "Suja driving school",
-                "test_type": "A",
-                "gov_username": "Kirmit91",
-                "gov_password": "Rijswijk123!",
-                "student_limit": 100,
-                "status": "2",
-                "test_center": {
-                    "id": 94,
-                    "created_at": "2021-07-09T17:42:37.503458Z",
-                    "last_modified": "2021-07-09T17:42:37.503505Z",
-                    "name": "Rijswijk Zh (Lange Kleiweg 30)"
-                    },
-                "students": [
-                    {
-                        "id": 10,
-                        "date_to_book": {
-                            "id": 30,
-                            "date": "2021-08-05",
-                            "week_day": "1",
-                            "start_time": "22:50:00",
-                            "end_time": "23:30:00",
-                            "free_slots": 3,
-                            "test_type": "A",
+            "crawlers": [
+                {
+                    "id": 1,
+                    "instructor": {
+                        "id": 45,
+                        "email": "bookable@bookable.com",
+                        "profile": {
+                            "full_name": "Bookable user",
+                            "mobile_number": "1231212322",
+                            "gov_username": "Rijschool Bezuidenhout",
+                            "gov_password": "Bristol1990..",
+                            "student_limit": 100,
+                            "status": "2",
+                            "test_type": "BTH",
+                            "driving_school_name": "Bookable",
                             "test_center": {
                                 "id": 94,
                                 "created_at": "2021-07-09T17:42:37.503458Z",
                                 "last_modified": "2021-07-09T17:42:37.503505Z",
                                 "name": "Rijswijk Zh (Lange Kleiweg 30)"
                                 },
-                            "found_by": 1
-                            },
-                        "created_at": "2021-07-29T18:34:05.587507Z",
-                        "last_modified": "2021-07-31T18:09:27.825748Z",
-                        "candidate_number": "4533466125",
-                        "birth_date": "2021-07-29",
-                        "first_name": "Abou",
-                        "last_name": "Omar",
-                        "search_range": "2",
-                        "test_booked": False,
-                        "days_to_skip": "4",
-                        "status": "3"
-                        }
-                    ]
-                }
-            }
+                            "students": [
+                                {
+                                    "id": 16,
+                                    "date_to_book": {
+                                        "id": 1520,
+                                        "date": "2021-11-26",
+                                        "week_day": "1",
+                                        "start_time": "12:40:00",
+                                        "end_time": "13:10:00",
+                                        "free_slots": 2,
+                                        "test_type": "BTH",
+                                        "test_center": {
+                                            "id": 94,
+                                            "created_at": "2021-07-09T17:42:37.503458Z",
+                                            "last_modified": "2021-07-09T17:42:37.503505Z",
+                                            "name": "Rijswijk Zh (Lange Kleiweg 30)"
+                                            },
+                                        "found_by": 30
+                                        },
+                                    "created_at": "2021-08-04T20:46:31.677034Z",
+                                    "last_modified": "2021-09-04T17:21:09.006305Z",
+                                    "candidate_number": "4555410025",
+                                    "birth_date": "2021-07-27",
+                                    "first_name": "Bookable Student",
+                                    "last_name": "Faissal Zefri",
+                                    "search_range": "2",
+                                    "days_to_skip": None,
+                                    "last_crawled": "2021-09-04T17:21:09.006113Z",
+                                    "status": "3"
+                                    }
+                                ],
+                            "search_count": 200
+                            }
+                        },
+                        "student": {
+                                "id": 16,
+                                "created_at": "2021-08-04T20:46:31.677034Z",
+                                "last_modified": "2021-09-04T17:21:09.006305Z",
+                                "candidate_number": "4555410025",
+                                "birth_date": "2021-07-27",
+                                "first_name": "Bookable Student",
+                                "last_name": "Faissal Zefri",
+                                "search_range": "2",
+                                "days_to_skip": None,
+                                "last_crawled": "2021-09-04T17:21:09.006113Z",
+                                "status": "3",
+                                "instructor": {
+                                    "id": 30,
+                                    "created_at": "2021-08-04T20:43:30.328523Z",
+                                    "last_modified": "2021-09-07T16:19:00.466204Z",
+                                    "driving_school_name": "Bookable",
+                                    "full_name": "Bookable user",
+                                    "mobile_number": "1231212322",
+                                    "gov_username": "Rijschool Bezuidenhout",
+                                    "gov_password": "Bristol1990..",
+                                    "test_type": "BTH",
+                                    "search_count": 200,
+                                    "student_limit": 100,
+                                    "last_crawled": "2021-08-05T21:17:38Z",
+                                    "status": "2",
+                                    "user": 45,
+                                    "test_center": 94
+                                    },
+                                "date_to_book": {
+                                    "id": 1520,
+                                    "created_at": "2021-08-08T21:32:28.460420Z",
+                                    "last_modified": "2021-08-08T21:54:06.064056Z",
+                                    "date": "2021-11-26",
+                                    "week_day": "1",
+                                    "status": "2",
+                                    "start_time": "12:40:00",
+                                    "end_time": "13:10:00",
+                                    "free_slots": 2,
+                                    "test_type": "BTH",
+                                    "test_center": 94,
+                                    "found_by": 30
+                                    }
+                                },
+                        "proxy": {
+                                "id": 32,
+                                "created_at": "2021-07-15T20:33:56.317758Z",
+                                "last_modified": "2021-08-05T18:10:35.802115Z",
+                                "ip": "163.198.133.250:3128",
+                                "use_count": 0,
+                                "ban_count": 0,
+                                "is_banned": False,
+                                "last_used": "2021-08-04T20:58:06.328084Z"
+                                },
+                        "last_ping": None,
+                        "role": "watch"
+    }
+        ]
+        }
 
 
-    i = Instructor(data)
+
+    i = CrawlerInstance(data['crawlers'][0])
+    #print(i.student.to_json())
     print(i.to_json())
 
 

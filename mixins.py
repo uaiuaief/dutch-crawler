@@ -125,6 +125,51 @@ class APIMixin(StudentStatusMixin, InstructorModelMixin):
         else:
             return None
 
+    def ping_crawler_instance(self, crawler_id):
+        endpoint = 'ping-crawler-instance'
+        url = f"{self.BASE_URL}/{endpoint}/?crawler_id={crawler_id}"
+
+        r = requests.get(
+                url,
+                auth=CREDENTIALS
+                )
+
+        if r.status_code == 200:
+            return True
+        else:
+            return False
+
+    def get_student_date_to_book(self, student_id):
+        endpoint = 'get-student-date-to-book'
+        url = f"{self.BASE_URL}/{endpoint}/?student_id={student_id}"
+
+        r = requests.get(
+                url,
+                auth=CREDENTIALS
+                )
+
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return None
+
+    def fetch_crawler_instances(self, role):
+        if role not in ['watch', 'book']:
+            raise Exception(f'{role} is not a valid role')
+
+        endpoint = 'get-crawler-instances'
+        url = f"{self.BASE_URL}/{endpoint}/?role={role}"
+
+        r = requests.get(
+                url,
+                auth=CREDENTIALS
+                )
+
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return None
+
     def add_date_found(self, data):
         date_found = DateFound(data)
         payload = date_found.to_dict()
@@ -165,7 +210,7 @@ class APIMixin(StudentStatusMixin, InstructorModelMixin):
 
 class DriverMixin:
     webdriver = webdriver
-    HEADLESS = True
+    HEADLESS = False
 
     def get_driver(self):
         return lambda: webdriver.Firefox(self.get_profile(), options=self.get_options())
@@ -214,6 +259,7 @@ class DriverMixin:
 
 if __name__ == "__main__":
     q = APIMixin()
+    print(q.get_student_date_to_book(20))
     #r = q.set_student_status(87, 5)
     #r = q.set_instructor_status(1, 3)
     #print(r)

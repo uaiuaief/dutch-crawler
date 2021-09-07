@@ -28,21 +28,28 @@ def is_gov_website_working():
     else:
         return True
 
-def get_watcher_info():
-    data = API.fetch_watcher_info()
 
-    if data:
-        user = data.get('user')
-        student = data.get('student')
-        proxy = data.get('proxy')
+def get_instances_to_spawn():
+    logger.debug('Fetching instances to spawn')
+    data = API.fetch_crawler_instances(role='watch')
+    crawlers = data.get('crawlers')
+    to_spawn = []
 
-        return (db.Instructor(user), proxy['ip'], db.Student(student))
-    else:
-        return None
+    if crawlers:
+        for each in crawlers:
+            to_spawn.append(db.CrawlerInstance(each))
 
-def spawn_watcher(instructor, proxy, student):
-    logger.debug("spawning crawler:")
+    return to_spawn
+
+def spawn_watcher(crawler_instance):
+    instructor = crawler_instance.instructor
+    proxy = crawler_instance.proxy.get('ip')
+    student = crawler_instance.student
+
+    logger.debug("spawning watcher:")
     logger.debug(f"instructor: {instructor.first_name}")
+    logger.debug(f"Watcher student: {student.first_name}")
+
     crawler = Crawler(instructor, proxy)
     
     driver = crawler.get_driver()
@@ -51,20 +58,20 @@ def spawn_watcher(instructor, proxy, student):
         while True:
             if not is_gov_website_working():
                 break
-            if student:
-                logger.debug(f"Watcher student: {student.first_name}")
+
+            is_instance_active = API.ping_crawler_instance(crawler_instance.id)
+            if is_instance_active:
                 crawler.update_last_crawled(instructor.id)
                 try:
                     crawler.watch(student)
                 except Exception as e:
                     error_time = format(datetime.now(), "%d-%m-%Y_%H:%M")
-                    driver.save_screenshot(f'/home/ubuntu/website/static/media/watcher_{error_time}.png')
+                    #driver.save_screenshot(f'/home/ubuntu/website/static/media/watcher_{error_time}.png')
                     raise e
-
+            else:
+                break
 
             time.sleep(WATCHER_INTERVAL)
-
-
 
 
 if __name__ == "__main__":
@@ -72,18 +79,18 @@ if __name__ == "__main__":
         if not is_gov_website_working():
             time.sleep(600)
             continue
-        logger.debug('getting watcher info')
-        watcher_info = get_watcher_info()
-        if watcher_info:
-            instructor, proxy, student = watcher_info
-            if instructor:
-                p = mp.Process(target=spawn_watcher, args=(instructor, proxy, student))
-                p.start()
-            else:
-                logger.debug("no instructor")
 
-            #break
+        to_spawn = get_instances_to_spawn()
+
+        for each in to_spawn:
+            p = mp.Process(target=spawn_watcher, args=((each, )))
+            p.start()
+
+        if not to_spawn:
+            logger.debug("No instances to spawn")
+
         time.sleep(WATCHER_SPAWN_INTERVAL)
+        #time.sleep(600)
         #print(instructor)
 
 
