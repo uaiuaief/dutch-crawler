@@ -308,7 +308,7 @@ class ManageExamRequestsPage(Page):
 
     def _set_page_actions(self):
         if type(self.previous_page) == SelectCandidatePage:
-            #self.actions.append(self.select_test_type)
+            self.actions.append(self.select_test_type)
             self.actions.append(self.search_dates)
         else:
             self.actions.append(self.select_candidate)
@@ -356,7 +356,7 @@ class ManageExamRequestsPage(Page):
                 #dropdown.send_keys('toon alles')
                 #self.human_type(dropdown, 'toon alles')
 
-                #dropdown.send_keys('toon alles')
+                dropdown.send_keys('toon alles')
                 dropdown.send_keys(Keys.ENTER)
                 time.sleep(1)
                 break

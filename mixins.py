@@ -123,7 +123,7 @@ class APIMixin(StudentStatusMixin, InstructorModelMixin):
         if r.status_code == 200:
             return r.json()
         else:
-            return None
+            return {}
 
     def ping_crawler_instance(self, crawler_id):
         endpoint = 'ping-crawler-instance'
@@ -165,10 +165,12 @@ class APIMixin(StudentStatusMixin, InstructorModelMixin):
                 auth=CREDENTIALS
                 )
 
+        r.raise_for_status()
+        return r.json()
         if r.status_code == 200:
             return r.json()
         else:
-            return None
+            return {}
 
     def add_date_found(self, data):
         date_found = DateFound(data)
