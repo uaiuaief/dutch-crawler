@@ -740,7 +740,11 @@ class BookingPage(Page):
                 accept_button = WebDriverWait(self.driver, self.WAITING_TIME).until(
                         EC.element_to_be_clickable((By.XPATH, accept_button_identifier)))
 
+
+                ss_time = format(datetime.now(), "%d-%m-%Y_%H:%M")
+                self.driver.save_screenshot(f'/home/ubuntu/website/static/media/booker_BEFORE_ACCEPT_{ss_time}.png')
                 accept_button.click()
+                self.driver.save_screenshot(f'/home/ubuntu/website/static/media/booker_AFTER_ACCEPT_{ss_time}.png')
 
                 logger.debug('clicking accept button')
                 time.sleep(2)
